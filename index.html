@@ -587,7 +587,7 @@ code{
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><path d="M3 14h7v7H3z" rx="1"/><path d="M17 14v3M17 20v1M14 17h3M20 17h1"/></svg>
     </div>
     <span class="nav-wordmark">HYBRID·SCHEDULER</span>
-    <span class="nav-version">v2.0</span>
+    <span class="nav-version">v2.3</span>
   </a>
   <div class="nav-tabs">
     <button class="nav-tab active" data-tab="doc" onclick="switchTab('doc')">DOCUMENTATION</button>
@@ -694,7 +694,7 @@ code{
             <div class="pipe-step" data-pipe="0">
               <div class="pipe-icon">🖊</div>
               <div class="pipe-label">Input</div>
-              <div class="pipe-desc">Teams, seats, synergy rules — typed, matrix-clicked, Excel-imported, or AI-described</div>
+              <div class="pipe-desc">Teams, seats, synergy rules — typed, matrix-clicked, Excel-imported, or spoken and AI-described</div>
             </div>
             <div class="pipe-step" data-pipe="1">
               <div class="pipe-icon">⚙️</div>
@@ -939,7 +939,15 @@ code{
 
         <p>v1 had a fifth dimension, NBD Fit, weighted at 15%. With the zone system removed, that weight moved entirely into Balance Fit (10% → 25%) rather than being redistributed thinly across all four — balance across the week is the dimension closest in spirit to what NBD Fit used to reward.</p>
 
-        <p>The Trust Score is displayed on every solution card. You can compare it across the top distinct solutions to understand the tradeoffs — one solution may sacrifice some synergy for better seat balance, while another nails synergy but is slightly peakier. A separate, live <strong>Synergy Complexity meter</strong> in the sidebar (weighted 13:2:1 across Must:Should:Good, matching the solver's real miss-penalties) tells you before you even run whether your rule set is likely to produce a tightly-constrained result.</p>
+        <p>The Trust Score is displayed on every solution card. You can compare it across the top distinct solutions to understand the tradeoffs — one solution may sacrifice some synergy for better seat balance, while another nails synergy but is slightly peakier.</p>
+
+        <div class="callout success">
+          <div class="callout-title">ADJUSTABLE WEIGHTS — NEW IN v2.2</div>
+          <p>The 30/25/20/25 split is now only the <em>default</em>. A weights panel under the solution buttons lets you set your own split (it must sum to 100) — a space-constrained office might push Seat Fit to 40, a collaboration-first culture might raise Synergy. Applying recalculates every solution's Trust Score <strong>from the same solver run</strong> (no re-solve needed) and re-groups the options, since score ties that existed under the old weights may split apart and new ties may fold together. Weights persist through autosave and saved sessions, and an (i) button in the panel explains the reasoning behind the defaults.</p>
+        </div>
+
+        <h3>Stringency: estimated before, measured after</h3>
+        <p>The sidebar carries a live <strong>Synergy Stringency</strong> meter (renamed from "Complexity" in v2.2), weighted 13:2:1 across Must:Should:Good to match the solver's real miss-penalties. It is honestly labelled <em>pre-run</em>: before solving, it can only be a structural estimate from the rules on paper. After every run, the results panel shows <strong>Realized Stringency</strong> — measured from the actual solution: peak seat utilisation plus the share of active rules met with zero slack. The estimate tells you what you asked for; the measurement tells you how hard it actually was. Both meters carry (i) info buttons explaining exactly what they mean and what to do when they run hot.</p>
       </div>
 
       <div class="doc-divider"></div>
@@ -964,7 +972,12 @@ code{
         <h3>Three ways to enter synergy data</h3>
         <p><strong>In-app matrix</strong> — click through team pairs directly, with live tooltips explaining each priority level and a running constraint-density indicator. <br>
         <strong>Excel — linear rows</strong> — one row per team pair (Team A, Team B, Direction, Frequency, Priority). Works for any number of teams, and the only format that supports Directional mode. <br>
-        <strong>Excel — matrix codes</strong> — new in v2. A 20×20 grid mirroring the in-app matrix, filled with short codes like <code>M1W</code> (Must, 1×/week) or <code>S2M</code> (Should, 2×/month). Symmetric mode only. If the matrix sheet has any codes in it on upload, it takes precedence over the linear sheet — the import summary tells you which one was used.</p>
+        <strong>Excel — matrix codes</strong> — a 20×20 grid mirroring the in-app matrix, filled with short codes like <code>M1W</code> (Must, 1×/week) or <code>S2M</code> (Should, 2×/month). Symmetric mode only. Since v2.2 the sheet carries <strong>live conditional formatting</strong>: as you type a code, the cell colors itself by criticality — M turns red, S amber, G green — even in a blank template, so the grid becomes an at-a-glance criticality map while you fill it in.</p>
+
+        <div class="callout">
+          <div class="callout-title">WHEN A WORKBOOK HAS BOTH FORMATS</div>
+          <p>On upload, the app checks which synergy format actually contains data. Only one filled in → it imports silently. Both filled in → you get an explicit choice ("Use Matrix Input" vs "Use Synergy sheet") before anything is applied, and the import summary records which source you picked. No more silent precedence rules.</p>
+        </div>
 
         <h3>Priority levels</h3>
         <p><strong>Must</strong> — A hard constraint. Missing this shared day is a critical failure, penalized at 520 points per miss. The solver will sacrifice almost anything else to satisfy Must rules. Use for: legal, compliance, and leadership pairing requirements.</p>
@@ -1060,8 +1073,8 @@ code{
           <tbody>
             <tr>
               <td>AI Data Entry</td>
-              <td>Describe your org in plain English; teams, headcounts, and a starter synergy matrix are extracted automatically. Everything remains editable afterward.</td>
-              <td>On demand, with a confirmation warning first — it replaces every team and rule currently entered</td>
+              <td>Talk, type, or upload audio to describe your org — the AI extracts teams, headcounts, seats, and a starter synergy matrix into a review preview, asks up to 5 follow-up questions for anything genuinely missing, and lets you refine (edit the text, dictate more, re-analyze) as many times as needed before applying.</td>
+              <td>On demand — Apply only unlocks once the app's own completeness check passes (≥2 teams, every headcount set, seats present), then confirms before overwriting existing data</td>
             </tr>
             <tr>
               <td>AI-Seeded Solver</td>
@@ -1070,25 +1083,33 @@ code{
             </tr>
             <tr>
               <td>Explain This Solution</td>
-              <td>A plain-English narrative of what a specific schedule prioritizes, who benefits, and what was traded off.</td>
+              <td>A structured, decision-grade analysis (Context → What it does → Why the solver chose this shape → Impact per stakeholder → Pros → Cons → Watch-outs → Bottom line), grounded in the actual numbers — including the measured Realized Stringency and any same-score alternatives.</td>
               <td>On demand, per solution</td>
             </tr>
             <tr>
               <td>Compare Solutions</td>
-              <td>A narrative comparing all distinct solutions found this run, with a recommendation by lens (cost, cohesion, flexibility). A separate, lighter comparison is available just for near-identical variations within one solution group.</td>
+              <td>A holistic comparison of all distinct options: per-option profiles, explicit pairwise trade-offs with real numbers, a "winner by lens" (space efficiency / cohesion / flexibility), and one declared overall winner defended against the runner-up. When options tie on score but differ structurally, the comparison addresses that head-on. A separate, lighter comparison covers near-identical variations within one group.</td>
               <td>On demand</td>
             </tr>
             <tr>
               <td>Draft Communications</td>
-              <td>Generates a policy memo, team-specific schedule emails, or a one-page executive brief, pre-filled with the selected schedule's data.</td>
+              <td>A full drafting form (v2.2): pick the audience (leadership / all staff / one specific team / HR &amp; Ops), tick the topics to cover (announcement, rationale, FAQ, exceptions process, feedback ask), choose format (memo / email / executive brief / Slack post), tone, and length, and add custom instructions. Team-specific drafts cover only that team's own days. Everything is grounded in the selected schedule's real data and start date.</td>
               <td>On demand</td>
             </tr>
           </tbody>
         </table>
 
+        <h3>The AI Data Entry loop, in detail</h3>
+        <p>This is the deepest AI feature, so it's worth walking through: <strong>Capture</strong> — talk (a mic button using your browser's built-in speech recognition, no API key needed), type, or upload a recorded audio file, all landing in one editable transcript box. <strong>Analyze</strong> — one AI call extracts a structured preview (scenario, seats, teams, synergy rules) and lists up to 5 genuinely missing items as follow-up questions. <strong>Refine</strong> — answer the questions by editing the transcript or dictating more, then Re-Analyze; repeat as needed. <strong>Apply</strong> — once complete, one click populates the app with the usual overwrite confirmation and source badge.</p>
+
+        <div class="callout success">
+          <div class="callout-title">THE APP DECIDES "COMPLETE," NOT THE AI</div>
+          <p>The Apply button is gated by a deterministic check the app runs itself — at least 2 teams, every team's headcount set, and seats present (either stated in your description or already set in the app) — independent of whatever the AI's questions say. This matters: an AI can be wrong about what's "enough," so the thing that actually unlocks Apply is a hard rule, not a judgment call. The AI's follow-up questions are a softer, helpful layer on top — for things like an unstated synergy frequency — that guide you toward a better result without blocking you from a technically valid one.</p>
+        </div>
+
         <div class="callout warn">
           <div class="callout-title">HONEST NOTE ON DATA FLOW</div>
-          <p>The core solver is, and remains, fully offline — nothing about the search itself ever leaves your browser. AI features are the one exception to that: when you use them, your team names, headcounts, and synergy rules are sent to whichever provider you connected, using your own key, under that provider's own terms. If that's not something you want, leave AI Assistance off — the tool is fully functional without it, exactly as v1 was.</p>
+          <p>The core solver is, and remains, fully offline — nothing about the search itself ever leaves your browser. AI features are one exception to that: when you use them, your team names, headcounts, and synergy rules are sent to whichever provider you connected, using your own key, under that provider's own terms. <strong>Dictation adds a second, smaller exception</strong> — it uses your browser's built-in speech recognition, and in Chrome that means the audio is sent to Google for transcription, independent of whether AI Assistance is even switched on. If neither is something you want, stick to typing — the tool is fully functional without either, exactly as v1 was.</p>
         </div>
 
         <div class="callout">
@@ -1128,11 +1149,11 @@ code{
             </tr>
             <tr>
               <td>Save / Load Session</td>
-              <td>Export the full scenario — teams, rules, results, selected solution — to a <code>.json</code> file, and reload it later or on another machine.</td>
+              <td>Export the full scenario — teams, rules, results, selected solution, trust weights — to a <code>.json</code> file named <code>ScenarioName_YYYY-MM-DD_HH-MM-SS.json</code>, and reload it later or on another machine.</td>
             </tr>
             <tr>
               <td>Snapshots</td>
-              <td>Up to 10 named in-browser snapshots, so you can park a few scenario variants side by side without leaving the tool.</td>
+              <td>Up to 10 named in-browser snapshots, so you can park a few scenario variants side by side without leaving the tool. Names default to <code>ScenarioName_timestamp</code> (editable before saving) so snapshots sort chronologically.</td>
             </tr>
             <tr>
               <td>Source Badge</td>
@@ -1157,11 +1178,11 @@ code{
           <tbody>
             <tr>
               <td>Executive Insights</td>
-              <td>KPI cards (Trust Score, peak occupancy, total iterations), a new <strong>Planned Occupancy</strong> block (eligible headcount, planned daily attendance, week person-days used vs. available, peak/trough days), a utilization bar chart with hover-for-team-breakdown, team attendance plan, deferred meeting flags, and a plain-English <strong>explainability panel</strong> naming exactly which team pairs are costing points and what single change would fix it.</td>
+              <td>KPI cards (Trust Score, peak occupancy, total iterations), the <strong>Planned Occupancy</strong> block (eligible headcount, planned daily attendance, week person-days used vs. available, peak/trough days), an <strong>animated utilization chart</strong> with a real people-count y-axis and hover-for-team-breakdown, the per-solution <strong>Realized Stringency</strong> reading, sub-scores shown with their current weights, team attendance plan, deferred meeting flags, and a plain-English <strong>explainability panel</strong> naming exactly which team pairs are costing points and what single change would fix it.</td>
             </tr>
             <tr>
               <td>Intelligence Graph</td>
-              <td>Layered line chart (also hoverable per day) showing % utilization, anchor density, all-together day flag, team-by-team anchor pattern analysis, constraint clash log.</td>
+              <td>Animated layered SVG chart with a labelled percentage y-axis — the utilization line draws itself in, markers fade in — showing % utilization, anchor density, all-together day flag (hoverable per day), team-by-team anchor pattern analysis, a <strong>Same-Score Alternatives</strong> block whenever another option ties this one's score with a different structure, and the constraint clash log.</td>
             </tr>
             <tr>
               <td>Work Calendar</td>
@@ -1171,8 +1192,9 @@ code{
         </table>
 
         <div class="callout">
-          <div class="callout-title">SOLUTION GROUPING — NEW IN v2</div>
-          <p>v1 always showed exactly 5 solutions, sometimes padding in near-identical schedules just to hit that number. v2 groups solutions instead: an option only gets its own entry if it's both a different score <em>and</em> structurally distinct (at least 3 day-swaps from every other option). Near-clones — same score, nearly the same schedule — fold into that entry as expandable "variations," with a lighter, focused AI comparison available just for those (when AI Assistance is on). You might see 2 distinct options in a simple scenario, or 5 in a complex one — whatever the search actually found, not a fixed number.</p>
+          <div class="callout-title">SOLUTION GROUPING</div>
+          <p>v1 always showed exactly 5 solutions, sometimes padding in near-identical schedules just to hit that number. v2 groups solutions instead: an option only gets its own entry if it's both a different score <em>and</em> structurally distinct (at least 3 day-swaps from every other option). Near-clones — same score, nearly the same schedule — fold into that entry as expandable variations, with the count shown in parentheses: <em>"Option 1 — 95/100 (4)"</em>. A lighter, focused AI comparison is available just for those variations (when AI Assistance is on). You might see 2 distinct options in a simple scenario, or 5 in a complex one — whatever the search actually found.</p>
+          <p style="margin-top:10px"><strong>Same score ≠ same schedule.</strong> Two options can tie on the weighted Trust Score while arranging teams completely differently. When that happens, the tool says so explicitly: an amber callout under "Why this solution ranks well" and a dedicated block in the Intelligence tab name exactly which teams sit on different days and how many day-swaps apart the options are — and the same facts are fed into the AI explain/compare prompts so the narrative addresses the tie head-on.</p>
         </div>
 
         <div class="illus-block">
@@ -1213,7 +1235,7 @@ code{
         </table>
 
         <h3>The Excel round-trip — rebuilt in v2</h3>
-        <p>Download an empty template (or export your exact current state) as a fully formatted workbook: styled headers, frozen panes, zebra-striped rows, and a comment on every input cell explaining what it does <em>and</em> how it affects the solver. Five sheets: <strong>Instructions, Setup, Teams, Synergy</strong> (linear, dropdown-validated), and <strong>Matrix Input</strong> (the new 20×20 short-code grid described above). Exporting your current state also adds the read-only Synergy Matrix view sheet. This is a real upgrade from v1's plain, uncommented cell dump — and the NBD/Team Rules sheets from v1 are gone along with the feature.</p>
+        <p>Download an empty template (or export your exact current state) as a fully formatted workbook: styled headers, frozen panes, zebra-striped rows, and a comment on every input cell explaining what it does <em>and</em> how it affects the solver. Five sheets: <strong>Instructions, Setup, Teams, Synergy</strong> (linear, dropdown-validated), and <strong>Matrix Input</strong> (the new 20×20 short-code grid described above). Exporting your current state also adds the read-only Synergy Matrix view sheet. The Matrix Input sheet colors codes by criticality as you type (conditional formatting baked into the file), and every export carries a sortable timestamped filename — the template as <code>Hybrid Scheduler Tool_Input_Template- YYYY-MM-DD_HH-MM-SS.xlsx</code>, and Export Current State as <code>ScenarioName_YYYY-MM-DD_HH-MM-SS.xlsx</code>. This is a real upgrade from v1's plain, uncommented cell dump — and the NBD/Team Rules sheets from v1 are gone along with the feature.</p>
 
         <div class="sheet-stack reveal" id="sheetStack">
           <div class="sheet-chip">Instructions</div>
@@ -1287,6 +1309,18 @@ code{
             <div class="limit-desc">The matrix-code Excel sheet is a fixed 20×20 grid and only supports Symmetric synergy rules. Larger orgs or Directional relationships need the linear Synergy sheet instead.</div>
             <span class="limit-tag">CURRENT LIMIT</span>
           </div>
+          <div class="limit-card">
+            <div class="limit-icon">🎤</div>
+            <div class="limit-title">Dictation depends on your browser</div>
+            <div class="limit-desc">Live voice dictation uses the browser's built-in speech engine: solid in Chrome and Edge, partial in Safari, unavailable in Firefox (the mic button hides itself automatically there). Typing always works everywhere as the fallback.</div>
+            <span class="limit-tag">CURRENT LIMIT</span>
+          </div>
+          <div class="limit-card">
+            <div class="limit-icon">📼</div>
+            <div class="limit-title">Audio-file transcription needs a Gemini key specifically</div>
+            <div class="limit-desc">Of the three supported AI providers, only Google Gemini accepts audio input — Anthropic and Grok keys can't transcribe a file. Uploading with a non-Gemini key gets a clear explanation and a pointer to live Dictate instead, which needs no key at all. Files are capped around 15MB.</div>
+            <span class="limit-tag">CURRENT LIMIT</span>
+          </div>
         </div>
       </div>
 
@@ -1340,7 +1374,7 @@ code{
   <iframe
     id="tool-iframe"
     title="Hybrid Work Policy Scheduler v2"
-    allow="*"
+    allow="microphone *"
     sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-modals allow-forms"
     srcdoc="<!DOCTYPE html>
 <html lang=&quot;en&quot;>
@@ -1520,6 +1554,18 @@ details.panel .panel-body{padding:0 12px 12px}
 .tl-bar{width:60%;border-radius:3px 3px 0 0;background:#5a9bff;transition:height .3s ease, background .3s ease;min-height:2px}
 .tl-lab{font-size:9px;color:#93a5c4;font-weight:800;margin-top:4px}
 .tl-val{font-size:10px;color:#e8eefb;font-weight:900;font-variant-numeric:tabular-nums}
+/* v2.3: speech + intake loop */
+.speech-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.btn.rec{background:#fef2f2;border-color:var(--red);color:var(--red);animation:recPulse 1.2s ease-in-out infinite}
+@keyframes recPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.35)}50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}}
+.intake-preview{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fbfdff}
+.ip-head{font-weight:900;font-size:13px;margin-bottom:10px}
+.ip-table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0}
+.ip-table th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:4px 8px;border-bottom:1px solid var(--line)}
+.ip-table td{padding:5px 8px;border-bottom:1px solid #eef3fa}
+.ip-q{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;margin:10px 0;font-size:12.5px;line-height:1.6}
+.ip-block{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;margin:10px 0;font-size:12.5px;line-height:1.6;color:var(--red)}
+.ip-syn{font-size:12px;color:var(--muted);line-height:1.7}
 /* v2.2: info buttons */
 .info-btn{
   display:inline-flex;align-items:center;justify-content:center;
@@ -1714,12 +1760,20 @@ details.panel .panel-body{padding:0 12px 12px}
         </div>
       </details>
       <details class=&quot;panel&quot; id=&quot;aiIntakePanel&quot;>
-        <summary><span>&amp;#10024; AI Data Entry <span class=&quot;ai-badge&quot;>overrides current inputs</span></span></summary>
+        <summary><span>&amp;#127908; AI Data Entry <span class=&quot;ai-badge&quot;>talk &amp;middot; type &amp;middot; upload</span></span></summary>
         <div class=&quot;panel-body&quot;>
-          <div class=&quot;warn-item&quot; style=&quot;margin-bottom:10px&quot;>&amp;#9888;&amp;#65039; Applying an AI-generated setup <strong>replaces</strong> every team and synergy rule currently entered — whether typed manually or imported from Excel. You will be asked to confirm first.</div>
-          <label>Describe Your Org</label>
-          <textarea id=&quot;aiIntakeText&quot; rows=&quot;4&quot; placeholder=&quot;Example: We are 220 people. Engineering 90, Product 25, Design 15, Sales 45, Marketing 20, Ops 25. Engineering and Product ship together weekly. Sales and Marketing run joint campaigns. Ops supports everyone monthly. We have 120 desks.&quot;></textarea>
-          <button class=&quot;btn ai&quot; id=&quot;aiIntakeBtn&quot; style=&quot;width:100%;margin-top:8px&quot;>&amp;#10024; Auto-Populate From Description</button>
+          <div class=&quot;warn-item&quot; style=&quot;margin-bottom:10px&quot;>&amp;#9888;&amp;#65039; Applying an AI-generated setup <strong>replaces</strong> every team and synergy rule currently entered — whether typed manually or imported from Excel. You will review the extraction and confirm before anything is applied.</div>
+          <label>Describe Your Org — talk, type, or upload audio</label>
+          <textarea id=&quot;aiIntakeText&quot; rows=&quot;5&quot; placeholder=&quot;Example: We are 220 people. Engineering 90, Product 25, Design 15, Sales 45, Marketing 20, Ops 25. Engineering and Product ship together weekly. Sales and Marketing run joint campaigns. Ops supports everyone monthly. We have 120 desks.&quot;></textarea>
+          <div class=&quot;speech-row&quot;>
+            <button class=&quot;btn small&quot; id=&quot;aiMicBtn&quot; type=&quot;button&quot;>&amp;#127908; Dictate</button>
+            <button class=&quot;btn small&quot; id=&quot;aiAudioBtn&quot; type=&quot;button&quot;>&amp;#128193; Upload Audio</button>
+            <input type=&quot;file&quot; id=&quot;aiAudioFile&quot; accept=&quot;audio/*&quot; style=&quot;display:none&quot;>
+            <span class=&quot;note&quot; id=&quot;aiSpeechStatus&quot;></span>
+          </div>
+          <div class=&quot;note&quot; style=&quot;margin-top:6px&quot;>&amp;#127908; Dictation uses your browser's built-in speech service (no API key needed; in Chrome the audio is processed by Google; unavailable in Firefox). Audio-file transcription needs a <strong>Gemini</strong> key. Typing always works.</div>
+          <button class=&quot;btn ai&quot; id=&quot;aiAnalyzeBtn&quot; style=&quot;width:100%;margin-top:10px&quot;>&amp;#10024; Analyze Description</button>
+          <div id=&quot;aiPreviewArea&quot; style=&quot;display:none;margin-top:12px&quot;></div>
         </div>
       </details>
       <div class=&quot;meter&quot; style=&quot;border-style:dashed&quot;>
@@ -1863,6 +1917,7 @@ details.panel .panel-body{padding:0 12px 12px}
       </div>
       <label style=&quot;margin-top:12px&quot;>Custom instructions (optional)</label>
       <textarea id=&quot;commsCustom&quot; rows=&quot;2&quot; placeholder=&quot;Anything specific: mention the new office cafe, note that parking is limited on Tuesdays, reference the Q3 survey…&quot;></textarea>
+      <div class=&quot;speech-row&quot;><button class=&quot;btn small&quot; id=&quot;commsMicBtn&quot; type=&quot;button&quot;>&amp;#127908; Dictate</button><span class=&quot;note&quot; id=&quot;commsSpeechStatus&quot;></span></div>
       <button class=&quot;btn ai&quot; id=&quot;commsGenerateBtn&quot; style=&quot;width:100%;margin-top:14px&quot;>&amp;#10024; Generate Draft</button>
     </div>
   </div>
@@ -4582,57 +4637,179 @@ self.onmessage = function(ev){
       &quot;Team office days:\n&quot;+state.teams.map((tm,i)=>&quot;- &quot;+tm.name+&quot;: &quot;+(e.patterns[i].map(d=>SHORT[d]).join(&quot;, &quot;)||&quot;none&quot;)).join(&quot;\n&quot;);
   }
 
-  // C1 — Natural language intake
-  $(&quot;aiIntakeBtn&quot;).onclick = async ()=>{
-    const desc = $(&quot;aiIntakeText&quot;).value.trim();
-    if(!desc){ alert(&quot;Describe your org in the text box first.&quot;); return; }
-    if(!state.ai.key || !state.ai.model){ alert(&quot;Connect an AI key first (top of this panel).&quot;); return; }
-    const btn=$(&quot;aiIntakeBtn&quot;); const orig=btn.innerHTML;
-    btn.innerHTML='<span class=&quot;spinner&quot;></span> Reading your description…'; btn.disabled=true;
-    try{
-      const prompt = 'You configure a hybrid-work scheduling tool. From the org description below, extract teams and synergy rules.\n'+
-        'Respond with ONLY valid JSON, no markdown fences, no commentary, in exactly this shape:\n'+
-        '{&quot;scenario&quot;:&quot;string&quot;,&quot;seats&quot;:number_or_null,&quot;teams&quot;:[{&quot;name&quot;:&quot;string&quot;,&quot;headcount&quot;:number,&quot;exempt&quot;:number_0_to_100,&quot;minDays&quot;:number_0_to_5}],&quot;synergy&quot;:[{&quot;a&quot;:&quot;team name&quot;,&quot;b&quot;:&quot;team name&quot;,&quot;priority&quot;:&quot;must|should|good&quot;,&quot;freq&quot;:0.25|0.5|1|2|3|4|5}]}\n'+
-        'Rules: use exempt 5 unless stated. minDays 0 unless stated. Only add synergy pairs the description implies; use must sparingly (genuine co-delivery), should for strong collaboration, good for occasional. freq 0.25=monthly, 0.5=twice monthly, 1=weekly, 2-5=days per week.\n\nDESCRIPTION:\n'+desc;
-      let raw = await aiCall(prompt, 2000);
-      raw = raw.replace(/```json|```/g,&quot;&quot;).trim();
-      const start = raw.indexOf(&quot;{&quot;), end = raw.lastIndexOf(&quot;}&quot;);
-      if(start<0||end<0) throw new Error(&quot;The model did not return JSON.&quot;);
-      const parsed = JSON.parse(raw.slice(start, end+1));
-      if(!Array.isArray(parsed.teams) || !parsed.teams.length) throw new Error(&quot;No teams found in the description.&quot;);
-      if(state.teams.length){
-        const ok = await askConfirm(&quot;Apply AI-generated setup?&quot;, &quot;&amp;#9888;&amp;#65039; This <strong>replaces</strong> every team and synergy rule currently entered — the &quot;+state.teams.length+&quot; existing team(s) (source: &quot;+esc(state.source)+&quot;) will be overwritten with &quot;+parsed.teams.length+&quot; AI-extracted team(s).&quot;);
-        if(!ok){ btn.innerHTML=orig; btn.disabled=false; return; }
-      }
-      resetState();
-      if(parsed.scenario) $(&quot;scenarioName&quot;).value = String(parsed.scenario).slice(0,120);
-      if(parsed.seats &amp;&amp; +parsed.seats>0) $(&quot;seats&quot;).value = Math.round(+parsed.seats);
-      parsed.teams.slice(0,40).forEach(t=>{
-        state.teams.push({name:String(t.name||&quot;Team&quot;).slice(0,60), headcount:Math.max(1,Math.round(+t.headcount||10)), exempt:Math.min(100,Math.max(0,Math.round(+t.exempt||5))), minDays:Math.min(5,Math.max(0,Math.round(+t.minDays||0)))});
-      });
-      syncRulesAfterTeamChange();
-      const nameIdx={}; state.teams.forEach((t,i)=>nameIdx[t.name.toLowerCase()]=i);
-      let applied=0;
-      (parsed.synergy||[]).forEach(s=>{
-        const ia=nameIdx[String(s.a||&quot;&quot;).toLowerCase()], ib=nameIdx[String(s.b||&quot;&quot;).toLowerCase()];
-        if(ia===undefined||ib===undefined||ia===ib) return;
-        const pri = [&quot;must&quot;,&quot;should&quot;,&quot;good&quot;].includes(s.priority)?s.priority:&quot;good&quot;;
-        const fr = [0.25,0.5,1,2,3,4,5].includes(+s.freq)?+s.freq:0.25;
-        state.pairRules[pairKey(ia,ib)] = {priority:pri, freq:fr};
-        applied++;
-      });
-      setMode(&quot;symmetric&quot;);
-      setSource(&quot;AI Generated&quot;);
-      syncGdInputs();
-      renderTeams(); renderCounters(); renderCompactPreview(); updateMeters(); markDirty();
-      $(&quot;resultsArea&quot;).innerHTML = '<div class=&quot;result-block&quot;><h3>&amp;#10024; AI Setup Complete</h3><div class=&quot;list&quot;>'+
-        '<div class=&quot;list-item&quot;>Teams created: <strong>'+state.teams.length+'</strong> · Synergy rules applied: <strong>'+applied+'</strong>'+(parsed.seats?' · Seats set to <strong>'+$(&quot;seats&quot;).value+'</strong>':'')+'</div>'+
-        '<div class=&quot;list-item&quot;>Everything is editable — review the teams and open the matrix to fine-tune, then click <strong>Run Solver</strong>.</div></div></div>';
-    }catch(err){
-      alert(&quot;AI intake failed: &quot;+err.message);
+  // C1 — v2.3: VOICE + TEXT INTAKE with analyze → refine → apply loop
+  // Dictation (browser Web Speech API — no key needed; hidden where unsupported)
+  function makeDictation(btnId, textareaId, statusId){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const btn = $(btnId); if(!btn) return;
+    const st = statusId ? $(statusId) : null;
+    if(!SR){ btn.style.display = &quot;none&quot;; if(st) st.textContent = &quot;Dictation isn't supported in this browser — typing works everywhere.&quot;; return; }
+    let rec = null, active = false;
+    btn.addEventListener(&quot;click&quot;, ()=>{
+      if(active){ try{ rec.stop(); }catch(e){} return; }
+      const ta = $(textareaId);
+      rec = new SR();
+      rec.continuous = true; rec.interimResults = true;
+      rec.lang = navigator.language || &quot;en-US&quot;;
+      let sessionFinal = &quot;&quot;;
+      const base = ta.value.trim();
+      rec.onstart = ()=>{ active = true; btn.classList.add(&quot;rec&quot;); btn.innerHTML = &quot;&amp;#9209;&amp;#65039; Stop&quot;; if(st) st.textContent = &quot;Listening… speak naturally, press Stop when done.&quot;; };
+      rec.onresult = ev=>{
+        let interim = &quot;&quot;;
+        for(let i=ev.resultIndex; i<ev.results.length; i++){
+          const r = ev.results[i];
+          if(r.isFinal) sessionFinal += r[0].transcript + &quot; &quot;;
+          else interim += r[0].transcript;
+        }
+        ta.value = base + (base &amp;&amp; (sessionFinal||interim) ? &quot; &quot; : &quot;&quot;) + sessionFinal + interim;
+      };
+      rec.onerror = e=>{
+        if(st) st.textContent = e.error===&quot;not-allowed&quot; ? &quot;Microphone blocked — allow mic access for this page and try again.&quot;
+          : e.error===&quot;no-speech&quot; ? &quot;No speech detected — try again closer to the mic.&quot;
+          : &quot;Speech error: &quot; + e.error;
+      };
+      rec.onend = ()=>{
+        active = false; btn.classList.remove(&quot;rec&quot;); btn.innerHTML = &quot;&amp;#127908; Dictate&quot;;
+        if(st &amp;&amp; st.textContent.startsWith(&quot;Listening&quot;)) st.textContent = &quot;Added. Edit the text freely, dictate more, or Analyze.&quot;;
+        markDirty();
+      };
+      try{ rec.start(); }catch(err){ if(st) st.textContent = &quot;Could not start dictation: &quot; + err.message; }
+    });
+  }
+  makeDictation(&quot;aiMicBtn&quot;, &quot;aiIntakeText&quot;, &quot;aiSpeechStatus&quot;);
+  makeDictation(&quot;commsMicBtn&quot;, &quot;commsCustom&quot;, &quot;commsSpeechStatus&quot;);
+
+  // Audio file upload → transcript (Gemini only; other providers can't accept audio)
+  $(&quot;aiAudioBtn&quot;).onclick = ()=>{
+    if(!(state.aiEnabled &amp;&amp; state.ai.key &amp;&amp; state.ai.model)){
+      alert(&quot;Switch on AI Assistance and connect a key first. Audio-file transcription specifically needs a Google Gemini key — but \uD83C\uDFA4 Dictate works right now without any key.&quot;); return;
     }
-    btn.innerHTML=orig; btn.disabled=false;
+    if(state.ai.provider !== &quot;gemini&quot;){
+      alert(&quot;Audio-file transcription is only available with a Google Gemini key — the Anthropic and Grok APIs don't accept audio input. Use \uD83C\uDFA4 Dictate instead (no key needed), or connect a Gemini key.&quot;); return;
+    }
+    $(&quot;aiAudioFile&quot;).click();
   };
+  $(&quot;aiAudioFile&quot;).addEventListener(&quot;change&quot;, async e=>{
+    const f = e.target.files[0]; e.target.value = &quot;&quot;;
+    if(!f) return;
+    if(f.size > 15*1024*1024){ alert(&quot;Audio file too large — keep it under 15 MB (roughly a long voice memo). Trim it or use Dictate.&quot;); return; }
+    const st = $(&quot;aiSpeechStatus&quot;);
+    st.innerHTML = '<span class=&quot;spinner&quot;></span> Transcribing audio with Gemini…';
+    try{
+      const b64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(&quot;,&quot;)[1]); r.onerror=()=>rej(new Error(&quot;File read failed&quot;)); r.readAsDataURL(f); });
+      const res = await fetch(&quot;https://generativelanguage.googleapis.com/v1beta/models/&quot;+encodeURIComponent(state.ai.model)+&quot;:generateContent?key=&quot;+encodeURIComponent(state.ai.key), {
+        method:&quot;POST&quot;, headers:{&quot;Content-Type&quot;:&quot;application/json&quot;},
+        body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:f.type||&quot;audio/mpeg&quot;, data:b64}},{text:&quot;Transcribe this audio verbatim in its original language. Output ONLY the transcript text — no commentary, no timestamps.&quot;}]}], generationConfig:{maxOutputTokens:4000}})
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error((data.error &amp;&amp; data.error.message) || (&quot;HTTP &quot;+res.status));
+      const cand = data.candidates &amp;&amp; data.candidates[0];
+      const txt = cand &amp;&amp; cand.content &amp;&amp; cand.content.parts ? cand.content.parts.map(p=>p.text||&quot;&quot;).join(&quot;&quot;) : &quot;&quot;;
+      if(!txt.trim()) throw new Error(&quot;The model returned an empty transcript.&quot;);
+      const ta = $(&quot;aiIntakeText&quot;);
+      ta.value = (ta.value.trim() ? ta.value.trim()+&quot; &quot; : &quot;&quot;) + txt.trim();
+      st.textContent = &quot;Transcript added (&quot;+Math.round(f.size/1024)+&quot; KB audio). Edit freely, then Analyze.&quot;;
+      markDirty();
+    }catch(err){ st.textContent = &quot;Transcription failed: &quot; + err.message; }
+  });
+
+  // Deterministic completeness gate — the app decides, not the AI
+  function intakeGate(p){
+    const issues = [];
+    const teams = (p.teams||[]).filter(t=>t &amp;&amp; String(t.name||&quot;&quot;).trim());
+    if(teams.length < 2) issues.push(&quot;At least 2 teams are required — &quot;+teams.length+&quot; found so far.&quot;);
+    teams.forEach(t=>{ if(!(+t.headcount>0)) issues.push('Team &quot;'+t.name+'&quot; has no headcount.'); });
+    const seats = (+p.seats>0) ? +p.seats : (+$(&quot;seats&quot;).value>0 ? +$(&quot;seats&quot;).value : 0);
+    if(!(seats>0)) issues.push(&quot;Seat capacity is missing — none stated in the description and none set in the app.&quot;);
+    return {ok: issues.length===0, issues};
+  }
+
+  function renderIntakePreview(p){
+    const area = $(&quot;aiPreviewArea&quot;);
+    const gate = intakeGate(p);
+    const teams = (p.teams||[]).filter(t=>t &amp;&amp; String(t.name||&quot;&quot;).trim());
+    let html = '<div class=&quot;intake-preview&quot;><div class=&quot;ip-head&quot;>&amp;#128203; Extracted setup — review before applying</div>';
+    html += '<div class=&quot;ip-syn&quot;>Scenario: <strong>'+esc(p.scenario||getScenarioName())+'</strong> · Seats: <strong>'+(+p.seats>0 ? p.seats : esc($(&quot;seats&quot;).value+&quot; (kept from app)&quot;))+'</strong></div>';
+    html += '<table class=&quot;ip-table&quot;><tr><th>Team</th><th>Headcount</th><th>Exempt %</th><th>Min Days</th></tr>'+
+      teams.map(t=>'<tr><td>'+esc(t.name)+'</td><td>'+(+t.headcount||'<span style=&quot;color:var(--red)&quot;>?</span>')+'</td><td>'+(t.exempt!=null?t.exempt:5)+'</td><td>'+(t.minDays!=null?t.minDays:0)+'</td></tr>').join('')+'</table>';
+    const syn = (p.synergy||[]).filter(s=>s&amp;&amp;s.a&amp;&amp;s.b);
+    html += '<div class=&quot;ip-syn&quot;><strong>Synergy rules ('+syn.length+'):</strong> '+(syn.length ? syn.map(s=>esc(s.a)+' &amp;harr; '+esc(s.b)+' — '+esc(String(s.priority||&quot;good&quot;))+' '+freqLabel(+s.freq||0.25)).join(' &amp;middot; ') : 'none stated — the global default will apply')+'</div>';
+    if(p.questions &amp;&amp; p.questions.length){
+      html += '<div class=&quot;ip-q&quot;><strong>&amp;#10067; The AI needs more detail:</strong><br>'+p.questions.map((q,i)=>(i+1)+'. '+esc(q)).join('<br>')+'<br><em>Answer by typing or dictating into the box above (just add the answers to the end), then Re-Analyze.</em></div>';
+    }
+    if(!gate.ok){
+      html += '<div class=&quot;ip-block&quot;><strong>&amp;#128683; Not ready to apply:</strong><br>'+gate.issues.map(x=>'&amp;bull; '+esc(x)).join('<br>')+'</div>';
+    }
+    html += '<div style=&quot;display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap&quot;>'+
+      '<button class=&quot;btn primary&quot; id=&quot;aiApplyBtn&quot;'+(gate.ok?'':' disabled title=&quot;Resolve the blocking items above first&quot;')+'>&amp;#10003; Apply to App</button>'+
+      '<span class=&quot;note&quot;>'+(gate.ok ? 'Ready. Applying replaces the current setup (you\'ll confirm first).' : 'Fix the blockers, then Re-Analyze.')+'</span></div></div>';
+    area.innerHTML = html;
+    area.style.display = &quot;&quot;;
+    const ab = $(&quot;aiApplyBtn&quot;);
+    if(ab) ab.onclick = ()=> applyIntakeParsed(state.aiIntakePreview);
+  }
+
+  $(&quot;aiAnalyzeBtn&quot;).onclick = async ()=>{
+    const desc = $(&quot;aiIntakeText&quot;).value.trim();
+    if(!desc){ alert(&quot;Describe your org first — talk, type, or upload audio.&quot;); return; }
+    if(!(state.aiEnabled &amp;&amp; state.ai.key &amp;&amp; state.ai.model)){ alert(&quot;Switch on AI Assistance and connect a key first. (Dictation works without a key, but the analysis step needs a model.)&quot;); return; }
+    const btn = $(&quot;aiAnalyzeBtn&quot;); const orig = btn.innerHTML;
+    btn.innerHTML = '<span class=&quot;spinner&quot;></span> Analyzing your description…'; btn.disabled = true;
+    try{
+      const prompt = 'You are the intake analyst for a hybrid-work scheduling tool. Extract structured data from the org description below AND identify what is missing.\n'+
+        'Respond with ONLY valid JSON, no markdown fences, exactly this shape:\n'+
+        '{&quot;scenario&quot;:&quot;string or null&quot;,&quot;seats&quot;:number_or_null,&quot;teams&quot;:[{&quot;name&quot;:&quot;string&quot;,&quot;headcount&quot;:number_or_null,&quot;exempt&quot;:number_0_to_100,&quot;minDays&quot;:number_0_to_5}],&quot;synergy&quot;:[{&quot;a&quot;:&quot;team name&quot;,&quot;b&quot;:&quot;team name&quot;,&quot;priority&quot;:&quot;must|should|good&quot;,&quot;freq&quot;:0.25|0.5|1|2|3|4|5}],&quot;questions&quot;:[&quot;string&quot;],&quot;notes&quot;:&quot;string or null&quot;}\n'+
+        'Rules: extract only what is stated or clearly implied. Default exempt to 5 and minDays to 0 when unstated — never ask about those. Use must sparingly (genuine co-delivery), should for strong collaboration, good for occasional; freq 0.25=monthly, 0.5=twice monthly, 1=weekly, 2-5=days per week.\n'+
+        'questions: ONLY genuinely missing or ambiguous items that materially affect scheduling — e.g. a team named without headcount, no seat capacity anywhere, a collaboration mentioned without any hint of frequency, or two team names that might be the same team. Maximum 5, most important first. If nothing essential is missing, questions MUST be an empty array. If the user answered earlier questions in the text, incorporate the answers and do not re-ask.\n\nDESCRIPTION:\n'+desc;
+      let raw = await aiCall(prompt, 2500);
+      raw = raw.replace(/```json|```/g,&quot;&quot;).trim();
+      const s0 = raw.indexOf(&quot;{&quot;), e0 = raw.lastIndexOf(&quot;}&quot;);
+      if(s0<0 || e0<0) throw new Error(&quot;The model did not return JSON.&quot;);
+      const parsed = JSON.parse(raw.slice(s0, e0+1));
+      state.aiIntakePreview = parsed;
+      renderIntakePreview(parsed);
+      btn.innerHTML = &quot;&amp;#8635; Re-Analyze&quot;;
+    }catch(err){
+      alert(&quot;Analysis failed: &quot;+err.message);
+      btn.innerHTML = orig;
+    }
+    btn.disabled = false;
+  };
+
+  async function applyIntakeParsed(parsed){
+    if(!parsed) return;
+    const gate = intakeGate(parsed);
+    if(!gate.ok){ alert(&quot;Not ready to apply:\n&quot;+gate.issues.join(&quot;\n&quot;)); return; }
+    if(state.teams.length){
+      const ok = await askConfirm(&quot;Apply AI-generated setup?&quot;, &quot;&amp;#9888;&amp;#65039; This <strong>replaces</strong> every team and synergy rule currently entered — the &quot;+state.teams.length+&quot; existing team(s) (source: &quot;+esc(state.source)+&quot;) will be overwritten with &quot;+parsed.teams.length+&quot; AI-extracted team(s).&quot;);
+      if(!ok) return;
+    }
+    resetState();
+    if(parsed.scenario) $(&quot;scenarioName&quot;).value = String(parsed.scenario).slice(0,120);
+    if(parsed.seats &amp;&amp; +parsed.seats>0) $(&quot;seats&quot;).value = Math.round(+parsed.seats);
+    parsed.teams.slice(0,40).forEach(t=>{
+      state.teams.push({name:String(t.name||&quot;Team&quot;).slice(0,60), headcount:Math.max(1,Math.round(+t.headcount||10)), exempt:Math.min(100,Math.max(0,Math.round(t.exempt!=null?+t.exempt:5))), minDays:Math.min(5,Math.max(0,Math.round(+t.minDays||0)))});
+    });
+    syncRulesAfterTeamChange();
+    const nameIdx = {}; state.teams.forEach((t,i)=> nameIdx[t.name.toLowerCase()] = i);
+    let applied = 0;
+    (parsed.synergy||[]).forEach(s=>{
+      const ia = nameIdx[String(s.a||&quot;&quot;).toLowerCase()], ib = nameIdx[String(s.b||&quot;&quot;).toLowerCase()];
+      if(ia===undefined || ib===undefined || ia===ib) return;
+      const pri = [&quot;must&quot;,&quot;should&quot;,&quot;good&quot;].includes(s.priority) ? s.priority : &quot;good&quot;;
+      const fr = [0.25,0.5,1,2,3,4,5].includes(+s.freq) ? +s.freq : 0.25;
+      state.pairRules[pairKey(Math.min(ia,ib),Math.max(ia,ib))] = {priority:pri, freq:fr};
+      applied++;
+    });
+    setMode(&quot;symmetric&quot;);
+    setSource(&quot;AI Generated&quot;);
+    syncGdInputs();
+    renderTeams(); renderCounters(); renderCompactPreview(); updateMeters(); markDirty();
+    $(&quot;aiPreviewArea&quot;).style.display = &quot;none&quot;;
+    $(&quot;resultsArea&quot;).innerHTML = '<div class=&quot;result-block&quot;><h3>&amp;#10024; AI Setup Complete</h3><div class=&quot;list&quot;>'+
+      '<div class=&quot;list-item&quot;>Teams created: <strong>'+state.teams.length+'</strong> · Synergy rules applied: <strong>'+applied+'</strong>'+(parsed.seats?' · Seats set to <strong>'+$(&quot;seats&quot;).value+'</strong>':'')+'</div>'+
+      '<div class=&quot;list-item&quot;>Everything is editable — review the teams and open the matrix to fine-tune, then click <strong>Run Solver</strong>.</div></div></div>';
+  }
 
   // C3 — AI pre-run validation
   $(&quot;aiValidateBtn&quot;).onclick = async ()=>{
