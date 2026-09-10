@@ -587,7 +587,7 @@ code{
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><path d="M3 14h7v7H3z" rx="1"/><path d="M17 14v3M17 20v1M14 17h3M20 17h1"/></svg>
     </div>
     <span class="nav-wordmark">HYBRID·SCHEDULER</span>
-    <span class="nav-version">v2.3</span>
+    <span class="nav-version">v2.8</span>
   </a>
   <div class="nav-tabs">
     <button class="nav-tab active" data-tab="doc" onclick="switchTab('doc')">DOCUMENTATION</button>
@@ -955,8 +955,8 @@ code{
       <!-- SYNERGY MODES -->
       <div class="doc-section" id="synergy">
         <div class="doc-section-eyebrow">SYNERGY MATRIX</div>
-        <h2>Two rule modes, three ways to fill them in</h2>
-        <p>The Synergy Matrix defines <em>how often and how urgently</em> any two teams need to be in the office on the same day. Underneath, there are two data modes; on top of that, three separate ways to actually enter the data.</p>
+        <h2>Two rule modes, four ways to fill them in</h2>
+        <p>The Synergy Matrix defines <em>how often and how urgently</em> any two teams need to be in the office on the same day. Underneath, there are two data modes; on top of that, four separate ways to actually enter the data — every one of them writing to the exact same underlying rules, so nothing you do in one view can go stale in another.</p>
 
         <div class="mode-compare">
           <div class="mode-card">
@@ -969,14 +969,26 @@ code{
           </div>
         </div>
 
-        <h3>Three ways to enter synergy data</h3>
-        <p><strong>In-app matrix</strong> — click through team pairs directly, with live tooltips explaining each priority level and a running constraint-density indicator. <br>
+        <h3>Four ways to enter synergy data</h3>
+        <p><strong>In-app matrix</strong> — click through team pairs directly, with live tooltips explaining each priority level and a running constraint-density indicator. Headers show each team as <code>A-Engineering</code>, <code>B-Product</code>, and so on, so the letter code and the name are never ambiguous. <br>
+        <strong>In-app List Entry</strong> — a dedicated <strong>"List Entry"</strong> button sits right next to "Open Matrix," opening a fully separate modal that never touches the matrix grid at all — plain dropdown rows (Team A / Team B / Frequency / Priority / Remove), with an "+ Add override" control at the bottom, only ever showing pairs you've actually customised. A "Switch to Matrix" button is there if you want the grid instead, but nothing requires it. The same view is also available as a tab inside the Matrix modal itself, for when you're already looking at the grid and want to flip to the list without leaving. Both are exactly the same data — edit a value in either one and the other reflects it instantly, they're two windows onto one underlying list, not two copies of it.<br>
         <strong>Excel — linear rows</strong> — one row per team pair (Team A, Team B, Direction, Frequency, Priority). Works for any number of teams, and the only format that supports Directional mode. <br>
-        <strong>Excel — matrix codes</strong> — a 20×20 grid mirroring the in-app matrix, filled with short codes like <code>M1W</code> (Must, 1×/week) or <code>S2M</code> (Should, 2×/month). Symmetric mode only. Since v2.2 the sheet carries <strong>live conditional formatting</strong>: as you type a code, the cell colors itself by criticality — M turns red, S amber, G green — even in a blank template, so the grid becomes an at-a-glance criticality map while you fill it in.</p>
+        <strong>Excel — matrix codes</strong> — a 20×20 grid mirroring the in-app matrix, filled with short codes like <code>M1W</code> (Must, 1×/week) or <code>S2M</code> (Should, 2×/month). Symmetric mode only. The sheet carries <strong>live conditional formatting</strong>: as you type a code, the cell colors itself by criticality — M turns red, S amber, G green — even in a blank template.</p>
+
+        <div class="callout success">
+          <div class="callout-title">RECENCY COLORING — NEW IN v2.4</div>
+          <p>Every customised pair carries a small colored marker — vivid on whichever pair you touched most recently, fading toward gray the longer ago it was set — visible as a ring around the cell in the Matrix and a swatch in the List View, both reading the same underlying edit order. Pairs still following the Global Default carry no marker at all; there's nothing to flag. It's there for exactly one reason: when you're deep in a large matrix and need to double-check "did I actually set this one, or is it still on autopilot," the color tells you before you have to click in and check.</p>
+        </div>
+
+        <div class="callout success">
+          <div class="callout-title">THE SIDEBAR SUMMARY IS NOW OVERRIDES-ONLY TOO</div>
+          <p>The live synergy summary next to the team list used to show the first few pairs regardless of whether they were customised or just following the default — with a large team count that list was mostly noise. It now leads with one line ("11 pairs follow the Global Default — Should · 1×/Week") and then lists only the pairs you've actually set, newest first, each with its recency swatch. Nothing is hidden; there's just nothing to show for a pair that has nothing special about it.</p>
+        </div>
 
         <div class="callout">
-          <div class="callout-title">WHEN A WORKBOOK HAS BOTH FORMATS</div>
-          <p>On upload, the app checks which synergy format actually contains data. Only one filled in → it imports silently. Both filled in → you get an explicit choice ("Use Matrix Input" vs "Use Synergy sheet") before anything is applied, and the import summary records which source you picked. No more silent precedence rules.</p>
+          <div class="callout-title">WHEN A WORKBOOK HAS BOTH FORMATS — AND WHAT COUNTS AS AN OVERRIDE</div>
+          <p>On upload, the app checks which synergy format actually contains data. Only one filled in → it imports silently. Both filled in → you get an explicit choice ("Use Matrix Input" vs "Use Synergy sheet") before anything is applied.</p>
+          <p style="margin-top:10px"><strong>Since v2.4</strong>, import is also smarter about what actually counts as a customisation. The Setup sheet's "Global Default Priority/Frequency" fields are read first — if a Synergy row or Matrix code exactly matches that stated default, it's treated as confirming the default, not stored as a separate override, so the app's List View and summary stay just as clean whether your data came from the UI or a spreadsheet. Only genuinely different rows become explicit overrides. If a file doesn't declare a default at all, every row is imported as an override instead (nothing is silently guessed from the data), and the import summary tells you exactly that — so you know to set the default field next time if you want the shorter list.</p>
         </div>
 
         <h3>Priority levels</h3>
@@ -1093,11 +1105,16 @@ code{
             </tr>
             <tr>
               <td>Draft Communications</td>
-              <td>A full drafting form (v2.2): pick the audience (leadership / all staff / one specific team / HR &amp; Ops), tick the topics to cover (announcement, rationale, FAQ, exceptions process, feedback ask), choose format (memo / email / executive brief / Slack post), tone, and length, and add custom instructions. Team-specific drafts cover only that team's own days. Everything is grounded in the selected schedule's real data and start date.</td>
+              <td>A full drafting form: pick the audience (leadership / all staff / one specific team / HR &amp; Ops), tick the topics to cover (announcement, rationale, FAQ, exceptions process, feedback ask), choose format (memo / email / executive brief / Slack post), tone, and length, and add custom instructions. Team-specific drafts cover only that team's own days. Everything is grounded in the selected schedule's real data and start date.</td>
               <td>On demand</td>
             </tr>
           </tbody>
         </table>
+
+        <div class="callout success">
+          <div class="callout-title">RESPONSE LENGTH IS ADAPTIVE — NEW IN v2.5</div>
+          <p>Earlier versions asked the model to "aim for roughly 400 words," which is a soft target models routinely undershoot — the actual ceiling was generous, but nothing made the model use it, so responses could come back thin. Every AI writing feature now computes a length plan from the real complexity of what it's explaining (team count, active synergy rules, number of solutions being compared, whether same-score ties exist) and enforces it as a floor, not a suggestion — a minimum of 3 full sentences under every heading, no heading skipped or left as a single line. A tiny 3-team scenario gets a tight ~300-word explanation; a large, tied, 25-team scenario gets the full ~950-word treatment. Draft Communications scales the same way against the number of topics you tick, so a "Short" memo covering five topics still gets enough room to actually cover all five.</p>
+        </div>
 
         <h3>The AI Data Entry loop, in detail</h3>
         <p>This is the deepest AI feature, so it's worth walking through: <strong>Capture</strong> — talk (a mic button using your browser's built-in speech recognition, no API key needed), type, or upload a recorded audio file, all landing in one editable transcript box. <strong>Analyze</strong> — one AI call extracts a structured preview (scenario, seats, teams, synergy rules) and lists up to 5 genuinely missing items as follow-up questions. <strong>Refine</strong> — answer the questions by editing the transcript or dictating more, then Re-Analyze; repeat as needed. <strong>Apply</strong> — once complete, one click populates the app with the usual overwrite confirmation and source badge.</p>
@@ -1159,6 +1176,10 @@ code{
               <td>Source Badge</td>
               <td>A small live label next to the scenario name — <em>Manual</em>, <em>Excel Import</em>, <em>AI Generated</em>, or <em>Preset (name)</em> — showing exactly how the current inputs got there. The newest action always wins, and destructive actions (Excel import, AI generation, presets) confirm before overwriting.</td>
             </tr>
+            <tr>
+              <td>Review-Before-Run Gate <span style="opacity:.6;font-weight:400">(new in v2.4)</span></td>
+              <td>Whenever synergy arrived in bulk — Excel import, AI generation, or a preset — clicking Run Solver first asks you to confirm you've looked at it: "Review First" opens the matrix and holds the run; "Run Anyway" proceeds and won't ask again for that same batch. Hand-typed synergy never triggers this — you've already been looking at each value as you set it.</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -1182,7 +1203,7 @@ code{
             </tr>
             <tr>
               <td>Intelligence Graph</td>
-              <td>Animated layered SVG chart with a labelled percentage y-axis — the utilization line draws itself in, markers fade in — showing % utilization, anchor density, all-together day flag (hoverable per day), team-by-team anchor pattern analysis, a <strong>Same-Score Alternatives</strong> block whenever another option ties this one's score with a different structure, and the constraint clash log.</td>
+              <td>Animated layered SVG chart with a labelled percentage y-axis — the utilization line draws itself in, markers fade in — showing % utilization, anchor density, and the all-together day flag (hoverable per day), team-by-team anchor pattern analysis, a <strong>Same-Score Alternatives</strong> block whenever another option ties this one's score with a different structure, and the constraint clash log. Peak day, anchor zone, and all-together day are called out in a caption strip below the chart rather than as floating labels on it, so they stay legible even when all three land on the same day.</td>
             </tr>
             <tr>
               <td>Work Calendar</td>
@@ -1190,6 +1211,11 @@ code{
             </tr>
           </tbody>
         </table>
+
+        <div class="callout success">
+          <div class="callout-title">FIXED IN v2.6 — CHART LABEL COLLISIONS</div>
+          <p>The Intelligence Graph used to place "Peak," "Anchor zone," and "All together" as separate floating text labels directly above the data points they described. When those three things happened to land on the same day — common, since the busiest collaboration day is often also the peak day — their labels piled directly on top of each other into an illegible mess, and the last day's value label could clip off the chart's right edge entirely. Both are fixed: the three call-outs now live in a single caption strip below the plot with guaranteed spacing regardless of which days coincide, and edge labels anchor inward instead of centering exactly on the boundary.</p>
+        </div>
 
         <div class="callout">
           <div class="callout-title">SOLUTION GROUPING</div>
@@ -1227,12 +1253,17 @@ code{
               <td>Flat tabular output matching the selected tab.</td>
             </tr>
             <tr>
-              <td>PDF Report</td>
-              <td>Executive presentation, archiving, client deliverables.</td>
-              <td>Multi-page A4 report: cover, KPIs, planned occupancy, utilization charts, work calendar, team assignments, and auto-generated recommendations.</td>
+              <td>PDF — Executive Brief</td>
+              <td>A one-page leadership handoff — the thing you actually print or attach to an email, not a data dump.</td>
+              <td>KPI strip, Trust Score composition, a real vector utilization chart, a one-line synergy summary, a team snapshot, and 3-5 recommendations computed from this specific run — not template text. A second page with a full AI-written analysis is appended automatically when AI Assistance is connected.</td>
             </tr>
           </tbody>
         </table>
+
+        <div class="callout success">
+          <div class="callout-title">REBUILT IN v2.8 — FROM A SCREENSHOT TO A REAL DOCUMENT</div>
+          <p>The original PDF export was a full-page screenshot of whichever results tab happened to be open, stretched into an A4 page — blurry chart, browser-only styling that didn't belong in a printed document, no real structure. It's now purpose-built: everything on the page is drawn directly as vector text and shapes, so it stays sharp at any zoom, and the content is a genuine <em>executive brief</em> rather than a dump of every tab. It fits deliberately in <strong>one page</strong> when AI Assistance is off. When it's on, exporting also fires a single fresh AI call and appends a second page with a full written analysis — the same one-call, no-pagination-guesswork approach used everywhere else the tool talks to a model. The recommendations on page one are never static text: they're computed from this run's actual peak day, average utilization, Must-rule misses, and Realized Stringency, so a quiet, well-balanced week and a maxed-out one get genuinely different advice.</p>
+        </div>
 
         <h3>The Excel round-trip — rebuilt in v2</h3>
         <p>Download an empty template (or export your exact current state) as a fully formatted workbook: styled headers, frozen panes, zebra-striped rows, and a comment on every input cell explaining what it does <em>and</em> how it affects the solver. Five sheets: <strong>Instructions, Setup, Teams, Synergy</strong> (linear, dropdown-validated), and <strong>Matrix Input</strong> (the new 20×20 short-code grid described above). Exporting your current state also adds the read-only Synergy Matrix view sheet. The Matrix Input sheet colors codes by criticality as you type (conditional formatting baked into the file), and every export carries a sortable timestamped filename — the template as <code>Hybrid Scheduler Tool_Input_Template- YYYY-MM-DD_HH-MM-SS.xlsx</code>, and Export Current State as <code>ScenarioName_YYYY-MM-DD_HH-MM-SS.xlsx</code>. This is a real upgrade from v1's plain, uncommented cell dump — and the NBD/Team Rules sheets from v1 are gone along with the feature.</p>
@@ -1554,6 +1585,19 @@ details.panel .panel-body{padding:0 12px 12px}
 .tl-bar{width:60%;border-radius:3px 3px 0 0;background:#5a9bff;transition:height .3s ease, background .3s ease;min-height:2px}
 .tl-lab{font-size:9px;color:#93a5c4;font-weight:800;margin-top:4px}
 .tl-val{font-size:10px;color:#e8eefb;font-weight:900;font-variant-numeric:tabular-nums}
+/* v2.4: recency + list view + review gate */
+.recency-legend{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--muted);margin:8px 0}
+.recency-bar{width:110px;height:8px;border-radius:5px;background:linear-gradient(90deg,#1d4ed8,#e5e7eb)}
+.mtabs{display:flex;gap:6px;margin-bottom:10px}
+.mtab{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:800;cursor:pointer}
+.mtab.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 10px 24px rgba(36,115,255,.18)}
+.list-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.list-table th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+.list-table td{padding:6px 8px;border-bottom:1px solid #eef3fa;vertical-align:middle}
+.list-table select{padding:5px 6px;font-size:12px}
+.list-swatch{width:14px;height:14px;border-radius:4px;display:inline-block;border:1px solid rgba(0,0,0,.12)}
+.list-add-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.default-note-row{font-size:12px;color:var(--muted);margin-bottom:10px;padding:8px 10px;background:#f8fbff;border-radius:8px}
 /* v2.3: speech + intake loop */
 .speech-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
 .btn.rec{background:#fef2f2;border-color:var(--red);color:var(--red);animation:recPulse 1.2s ease-in-out infinite}
@@ -1720,8 +1764,9 @@ details.panel .panel-body{padding:0 12px 12px}
             <button data-mode=&quot;directional&quot;>Directional</button>
           </div>
         </div>
-        <div style=&quot;align-self:end&quot;><button class=&quot;btn&quot; id=&quot;openMatrixBtn&quot; style=&quot;width:100%&quot;>Open Matrix</button></div>
+        <div style=&quot;align-self:end&quot;><button class=&quot;btn&quot; id=&quot;openMatrixBtn&quot; style=&quot;width:100%&quot;>&amp;#128200; Open Matrix</button></div>
       </div>
+      <div style=&quot;margin-top:8px&quot;><button class=&quot;btn&quot; id=&quot;openListBtn&quot; style=&quot;width:100%&quot;>&amp;#128203; List Entry (customised pairs — no matrix needed)</button></div>
       <div class=&quot;meter&quot; id=&quot;complexityMeter&quot;>
         <div class=&quot;meter-head&quot;><span>&amp;#129504; Synergy Stringency (pre-run) <button class=&quot;info-btn&quot; data-info=&quot;stringency&quot; title=&quot;What does this mean?&quot;>i</button></span><span id=&quot;complexityVal&quot;>—</span></div>
         <div class=&quot;meter-track&quot;><div id=&quot;complexityBar&quot;></div></div>
@@ -1847,7 +1892,32 @@ details.panel .panel-body{padding:0 12px 12px}
         &amp;bull; <strong>None</strong> = no requirement; the solver ignores this pair.<br>
         &amp;bull; Rule of thumb: if more than a third of your pairs are Must, the schedule usually collapses into everyone-in-every-day. Keep Must rare and meaningful.
       </div>
-      <div class=&quot;matrix-wrap&quot;><div id=&quot;matrixArea&quot;></div></div>
+      <div class=&quot;mtabs&quot;>
+        <button class=&quot;mtab active&quot; id=&quot;mtabMatrix&quot; type=&quot;button&quot;>&amp;#128200; Matrix View</button>
+        <button class=&quot;mtab&quot; id=&quot;mtabList&quot; type=&quot;button&quot;>&amp;#128203; List View (customised pairs only)</button>
+      </div>
+      <div class=&quot;recency-legend&quot;><span>&amp;#128337; Recently edited</span><div class=&quot;recency-bar&quot;></div><span>Longer ago / never touched</span></div>
+      <div class=&quot;matrix-wrap&quot; id=&quot;matrixWrapView&quot;><div id=&quot;matrixArea&quot;></div></div>
+      <div id=&quot;matrixListView&quot; style=&quot;display:none&quot;></div>
+    </div>
+  </div>
+</div>
+
+<div class=&quot;matrix-modal&quot; id=&quot;listModal&quot;>
+  <div class=&quot;modal-card&quot;>
+    <div class=&quot;modal-head&quot;>
+      <div>
+        <h3 style=&quot;margin:0 0 6px&quot;>Team Synergy — List Entry</h3>
+        <div class=&quot;sub&quot;>Enter synergy pairs as plain dropdown rows, the way you would in the Excel Synergy sheet. Only pairs you customise appear here — everything else quietly follows the Global Default above. No matrix grid involved.</div>
+      </div>
+      <div style=&quot;display:flex;gap:8px;flex-wrap:wrap&quot;>
+        <button class=&quot;btn&quot; id=&quot;openMatrixFromListBtn&quot; title=&quot;Switch to the visual grid instead&quot;>&amp;#128200; Switch to Matrix</button>
+        <button class=&quot;btn primary&quot; id=&quot;closeListBtn&quot;>Done</button>
+      </div>
+    </div>
+    <div class=&quot;modal-body&quot;>
+      <div class=&quot;recency-legend&quot;><span>&amp;#128337; Recently edited</span><div class=&quot;recency-bar&quot;></div><span>Longer ago / never touched</span></div>
+      <div id=&quot;listModalArea&quot;></div>
     </div>
   </div>
 </div>
@@ -1960,6 +2030,7 @@ details.panel .panel-body{padding:0 12px 12px}
     solutions:[], groups:[], selectedGroup:0, selectedVariation:0, selectedSolution:0, totalIterations:0,
     globalDefault:{freq:0, priority:&quot;none&quot;, count:1, cadence:0.25},
     trustWeights:{seat:30, synergy:25, attendance:20, balance:25},
+    synergySeq:0, synergyReviewed:true,
     dedupePref:&quot;variety&quot;,
     source:&quot;Manual&quot;,
     aiEnabled:false,
@@ -2016,8 +2087,31 @@ details.panel .panel-body{padding:0 12px 12px}
   function pairKey(i,j){ return i<j ? i+&quot;|&quot;+j : j+&quot;|&quot;+i; }
   function dirKey(i,j){ return i+&quot;>&quot;+j; }
   function defaultRule(){ return {freq:state.globalDefault.freq, priority:state.globalDefault.priority}; }
-  function getPairRule(i,j){ const k=pairKey(i,j); if(!state.pairRules[k]) state.pairRules[k]=defaultRule(); return state.pairRules[k]; }
-  function getDirRule(i,j){ const k=dirKey(i,j); if(!state.dirRules[k]) state.dirRules[k]=defaultRule(); return state.dirRules[k]; }
+  // v2.4: READ-ONLY. Never writes to state — returns the pair's own override if it has one,
+  // otherwise the LIVE global default (so changing the default instantly affects every
+  // un-overridden pair with no resync step needed).
+  function effPairRule(i,j){ const k=pairKey(i,j); return state.pairRules[k] || defaultRule(); }
+  function effDirRule(i,j){ const k=dirKey(i,j); return state.dirRules[k] || defaultRule(); }
+  function hasPairOverride(i,j){ return !!state.pairRules[pairKey(i,j)]; }
+  function hasDirOverride(i,j){ return !!state.dirRules[dirKey(i,j)]; }
+  // v2.4: the ONLY place an override gets created — always stamps a recency sequence number.
+  function setPairRule(i,j, patch){
+    const k=pairKey(i,j);
+    const cur = state.pairRules[k] || {freq:state.globalDefault.freq, priority:state.globalDefault.priority};
+    state.pairRules[k] = Object.assign({}, cur, patch, {_seq: ++state.synergySeq});
+    return state.pairRules[k];
+  }
+  function setDirRule(i,j, patch){
+    const k=dirKey(i,j);
+    const cur = state.dirRules[k] || {freq:state.globalDefault.freq, priority:state.globalDefault.priority};
+    state.dirRules[k] = Object.assign({}, cur, patch, {_seq: ++state.synergySeq});
+    return state.dirRules[k];
+  }
+  function clearPairRule(i,j){ delete state.pairRules[pairKey(i,j)]; }
+  function clearDirRule(i,j){ delete state.dirRules[dirKey(i,j)]; }
+  // Back-compat shims for any remaining read-only call sites (never mutate now)
+  function getPairRule(i,j){ return effPairRule(i,j); }
+  function getDirRule(i,j){ return effDirRule(i,j); }
   function freqOptions(selected){
     return FREQ_OPTIONS.map(o => '<option value=&quot;'+o.value+'&quot; '+(Math.abs((+selected||0)-o.value)<0.001?'selected':'')+'>'+o.label+'</option>').join(&quot;&quot;);
   }
@@ -2053,6 +2147,7 @@ details.panel .panel-body{padding:0 12px 12px}
     state.solutions = []; state.groups = []; state.selectedGroup = 0; state.selectedVariation = 0; state.selectedSolution = 0;
     state.globalDefault = {freq:0, priority:&quot;none&quot;, count:1, cadence:0.25};
     state.trustWeights = {seat:30, synergy:25, attendance:20, balance:25};
+    state.synergySeq = 0; state.synergyReviewed = true;
     state.calStart = mondayDefault();
   }
 
@@ -2065,7 +2160,7 @@ details.panel .panel-body{padding:0 12px 12px}
       scenarioName:$(&quot;scenarioName&quot;).value, seats:+$(&quot;seats&quot;).value||0, weeks:+$(&quot;weeks&quot;).value||1,
       mode:state.mode, teams:JSON.parse(JSON.stringify(state.teams)),
       pairRules:state.pairRules, dirRules:state.dirRules,
-      globalDefault:state.globalDefault, trustWeights:state.trustWeights, dedupePref:state.dedupePref, calStart:state.calStart,
+      globalDefault:state.globalDefault, trustWeights:state.trustWeights, synergySeq:state.synergySeq, synergyReviewed:state.synergyReviewed, dedupePref:state.dedupePref, calStart:state.calStart,
       source:state.source, aiEnabled:state.aiEnabled,
       solutions:state.solutions ? JSON.parse(JSON.stringify(state.solutions)) : [],
       groups:state.groups ? state.groups.map(g=>({rep:g.rep, variations:g.variations})) : [],
@@ -2090,6 +2185,16 @@ details.panel .panel-body{padding:0 12px 12px}
     applyAIMasterUI();
     state.dedupePref = obj.dedupePref === &quot;score&quot; ? &quot;score&quot; : &quot;variety&quot;;
     state.trustWeights = (obj.trustWeights &amp;&amp; typeof obj.trustWeights===&quot;object&quot; &amp;&amp; [&quot;seat&quot;,&quot;synergy&quot;,&quot;attendance&quot;,&quot;balance&quot;].every(k=>Number.isFinite(+obj.trustWeights[k]))) ? {seat:+obj.trustWeights.seat, synergy:+obj.trustWeights.synergy, attendance:+obj.trustWeights.attendance, balance:+obj.trustWeights.balance} : {seat:30, synergy:25, attendance:20, balance:25};
+    // v2.4: migrate pre-v2.4 files — they materialized a default-value entry for every pair
+    // ever rendered, so drop any override that exactly matches THIS file's own stated default,
+    // and backfill a synthetic recency order for genuine survivors that predate _seq.
+    state.synergySeq = Number.isFinite(+obj.synergySeq) ? +obj.synergySeq : 0;
+    state.synergyReviewed = obj.synergyReviewed !== undefined ? !!obj.synergyReviewed : true;
+    [state.pairRules, state.dirRules].forEach(bag=>{
+      const matches = r => r &amp;&amp; r.priority===state.globalDefault.priority &amp;&amp; Math.abs((+r.freq||0)-(state.globalDefault.freq||0))<0.001;
+      Object.keys(bag).forEach(k=>{ if(matches(bag[k]) &amp;&amp; bag[k]._seq===undefined) delete bag[k]; });
+      Object.keys(bag).forEach(k=>{ if(bag[k]._seq===undefined) bag[k]._seq = ++state.synergySeq; });
+    });
     state.calStart = /^\d{4}-\d{2}-\d{2}$/.test(obj.calStart||&quot;&quot;) ? obj.calStart : mondayDefault();
     state.solutions = Array.isArray(obj.solutions) ? obj.solutions : [];
     state.groups = Array.isArray(obj.groups) &amp;&amp; obj.groups.length ? obj.groups : (state.solutions.length ? state.solutions.map(s=>({rep:s, variations:[s]})) : []);
@@ -2243,18 +2348,16 @@ details.panel .panel-body{padding:0 12px 12px}
   }
   function onGdChange(){
     enforceGdMustCadence();
-    const old = {...state.globalDefault};
     const pri = $(&quot;gdPriority&quot;).value;
     const cnt = Math.max(1, Math.min(5, +$(&quot;gdCount&quot;).value||1));
     const cad = +$(&quot;gdCadence&quot;).value;
     const freq = pri===&quot;none&quot; ? 0 : Math.min(5, cnt*cad);
     state.globalDefault = {priority:pri, freq, count:cnt, cadence:cad};
-    const matchOld = r => r &amp;&amp; r.priority===old.priority &amp;&amp; Math.abs((+r.freq||0)-(old.freq||0))<0.001;
-    Object.keys(state.pairRules).forEach(k=>{ if(matchOld(state.pairRules[k])) state.pairRules[k]=defaultRule(); });
-    Object.keys(state.dirRules).forEach(k=>{ if(matchOld(state.dirRules[k])) state.dirRules[k]=defaultRule(); });
+    // v2.4: nothing to resync — pairs without an explicit override read the live default
+    // directly (effPairRule/effDirRule), so changing it here takes effect instantly everywhere.
     updateGdNote();
     renderCompactPreview(); updateMeters(); markDirty();
-    if($(&quot;matrixModal&quot;).style.display===&quot;block&quot;) renderMatrix();
+    if($(&quot;matrixModal&quot;).style.display===&quot;block&quot;){ renderMatrix(); renderMatrixList(); }
   }
   $(&quot;gdCount&quot;).addEventListener(&quot;input&quot;, onGdChange);
   $(&quot;gdCadence&quot;).addEventListener(&quot;change&quot;, onGdChange);
@@ -2321,35 +2424,54 @@ details.panel .panel-body{padding:0 12px 12px}
   });
   $(&quot;addTeamBtn&quot;).onclick = ()=>addTeam();
 
+  // v2.4: only carries forward pairs that were ALREADY explicit overrides — never backfills a
+  // default for every combination. Backfilling here was the actual cause of every pair getting
+  // materialized the moment a team was added/removed/reordered.
   function syncRulesAfterTeamChange(){
     const nextPairs={}, nextDirs={};
     for(let i=0;i<state.teams.length;i++){
       for(let j=0;j<state.teams.length;j++){
         if(i===j) continue;
-        if(i<j) nextPairs[pairKey(i,j)] = state.pairRules[pairKey(i,j)] || defaultRule();
-        nextDirs[dirKey(i,j)] = state.dirRules[dirKey(i,j)] || defaultRule();
+        if(i<j){ const ex=state.pairRules[pairKey(i,j)]; if(ex) nextPairs[pairKey(i,j)]=ex; }
+        const exd=state.dirRules[dirKey(i,j)]; if(exd) nextDirs[dirKey(i,j)]=exd;
       }
     }
     state.pairRules = nextPairs; state.dirRules = nextDirs;
   }
 
+  // v2.4: shows ONLY pairs customised away from the Global Default — not every pair.
   function renderCompactPreview(){
-    const host = $(&quot;compactPreview&quot;);
-    if(state.teams.length<2){ host.innerHTML = '<div class=&quot;empty&quot;>Add at least two teams to set synergy conditions.</div>'; return; }
-    const rows=[]; let shown=0;
-    for(let i=0;i<state.teams.length &amp;&amp; shown<5;i++){
-      for(let j=i+1;j<state.teams.length &amp;&amp; shown<5;j++){
-        if(state.mode===&quot;symmetric&quot;){
-          const r=getPairRule(i,j);
-          rows.push('<div class=&quot;preview-row&quot;><div><strong>'+esc(state.teams[i].name)+'</strong> ↔ <strong>'+esc(state.teams[j].name)+'</strong></div><div>'+freqLabel(r.freq)+' · '+PRIORITY_LABEL[r.priority]+'</div></div>');
-        } else {
-          const a=getDirRule(i,j), b=getDirRule(j,i);
-          rows.push('<div class=&quot;preview-row&quot;><div><strong>'+esc(state.teams[i].name)+'</strong> → <strong>'+esc(state.teams[j].name)+'</strong><br><strong>'+esc(state.teams[j].name)+'</strong> → <strong>'+esc(state.teams[i].name)+'</strong></div><div>'+freqLabel(a.freq)+' · '+PRIORITY_LABEL[a.priority]+'<br>'+freqLabel(b.freq)+' · '+PRIORITY_LABEL[b.priority]+'</div></div>');
-        }
-        shown++;
-      }
+    const host = $(&quot;compactPreview&quot;), n = state.teams.length;
+    if(n<2){ host.innerHTML = '<div class=&quot;empty&quot;>Add at least two teams to set synergy conditions.</div>'; return; }
+    const totalPairs = n*(n-1)/2;
+    let overridden = [];
+    if(state.mode===&quot;symmetric&quot;){
+      Object.keys(state.pairRules).forEach(k=>{
+        const [i,j]=k.split(&quot;|&quot;).map(Number); if(i>=n||j>=n) return;
+        overridden.push({i,j,rule:state.pairRules[k],dir:false});
+      });
+    } else {
+      Object.keys(state.dirRules).forEach(k=>{
+        const [i,j]=k.split(&quot;>&quot;).map(Number); if(i>=n||j>=n) return;
+        overridden.push({i,j,rule:state.dirRules[k],dir:true});
+      });
     }
-    host.innerHTML = rows.join(&quot;&quot;);
+    overridden.sort((a,b)=>(b.rule._seq||0)-(a.rule._seq||0));
+    const gd = state.globalDefault;
+    const defaultDesc = gd.priority===&quot;none&quot; ? &quot;no requirement&quot; : PRIORITY_LABEL[gd.priority]+&quot; · &quot;+freqLabel(gd.freq);
+    const untouchedCount = state.mode===&quot;symmetric&quot; ? (totalPairs - overridden.length) : (totalPairs*2 - overridden.length);
+    let html = '<div class=&quot;preview-row&quot; style=&quot;background:#f8fbff&quot;><div><strong>'+untouchedCount+' pair'+(untouchedCount===1?'':'s')+'</strong> follow the Global Default</div><div>'+esc(defaultDesc)+'</div></div>';
+    if(!overridden.length){
+      html += '<div class=&quot;empty&quot; style=&quot;margin-top:6px&quot;>No customised pairs — open the matrix to set exceptions.</div>';
+    } else {
+      const shown = overridden.slice(0,8);
+      shown.forEach(o=>{
+        const rc = recencyOf(o.rule);
+        html += '<div class=&quot;preview-row&quot;><div><span class=&quot;list-swatch&quot; style=&quot;background:'+(rc||'#e5e7eb')+';margin-right:6px;vertical-align:-2px&quot;></span><strong>'+esc(state.teams[o.i].name)+'</strong> '+(o.dir?'&amp;rarr;':'&amp;harr;')+' <strong>'+esc(state.teams[o.j].name)+'</strong></div><div>'+freqLabel(o.rule.freq)+' · '+PRIORITY_LABEL[o.rule.priority]+'</div></div>';
+      });
+      if(overridden.length>8) html += '<div class=&quot;note&quot; style=&quot;margin-top:4px&quot;>+'+(overridden.length-8)+' more customised pair(s) — open the matrix to see all.</div>';
+    }
+    host.innerHTML = html;
   }
   function freqLabel(v){
     const n=+v||0;
@@ -2374,12 +2496,20 @@ details.panel .panel-body{padding:0 12px 12px}
   // ───────────────────────────────────────────────
   const CELL_TIP = &quot;Priority meaning — Must: hard requirement, solver will not accept a plan that misses it. Should: strong preference, traded off only when necessary. Good: nice-to-have. None: ignored. Frequency is how often the two teams overlap in office per week (or per month).&quot;;
   function constraintDensity(){
-    const rules = state.mode===&quot;symmetric&quot; ? state.pairRules : state.dirRules;
-    const vals = Object.values(rules);
-    if(!vals.length) return {pct:0, must:0};
-    const active = vals.filter(r=>r &amp;&amp; r.priority!==&quot;none&quot; &amp;&amp; +r.freq>0);
-    const must = active.filter(r=>r.priority===&quot;must&quot;).length;
-    return {pct: Math.round(active.length/vals.length*100), must};
+    const n = state.teams.length;
+    if(n<2) return {pct:0, must:0};
+    let total=0, active=0, must=0;
+    for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
+      if(state.mode===&quot;symmetric&quot;){
+        total++; const r=effPairRule(i,j);
+        if(r.priority!==&quot;none&quot; &amp;&amp; +r.freq>0){ active++; if(r.priority===&quot;must&quot;) must++; }
+      } else {
+        total+=2;
+        const a=effDirRule(i,j), b=effDirRule(j,i);
+        [a,b].forEach(r=>{ if(r.priority!==&quot;none&quot; &amp;&amp; +r.freq>0){ active++; if(r.priority===&quot;must&quot;) must++; } });
+      }
+    }
+    return {pct: total ? Math.round(active/total*100) : 0, must};
   }
   function updateDensityChip(){
     const d = constraintDensity();
@@ -2388,24 +2518,43 @@ details.panel .panel-body{padding:0 12px 12px}
     chip.style.background = d.must>Math.max(2,state.teams.length) ? &quot;#fee2e2&quot; : d.pct>60 ? &quot;#fef3c7&quot; : &quot;#d1fae5&quot;;
     chip.style.color = d.must>Math.max(2,state.teams.length) ? &quot;#dc2626&quot; : d.pct>60 ? &quot;#d97706&quot; : &quot;#16a34a&quot;;
   }
+  // v2.4: recency color — interpolate between &quot;just edited&quot; and &quot;long ago / untouched&quot;
+  function lerp(a,b,t){ return Math.round(a+(b-a)*t); }
+  function recencyColor(t){ // t: 0 = oldest, 1 = most recent
+    const from=[229,231,235], to=[29,78,216]; // gray-200 -> blue-700
+    return 'rgb('+lerp(from[0],to[0],t)+','+lerp(from[1],to[1],t)+','+lerp(from[2],to[2],t)+')';
+  }
+  function allExplicitRules(){
+    const bag = state.mode===&quot;symmetric&quot; ? state.pairRules : state.dirRules;
+    return Object.keys(bag).map(k=>bag[k]).filter(r=>r &amp;&amp; r._seq!==undefined);
+  }
+  function recencyOf(rule){
+    if(!rule || rule._seq===undefined) return null;
+    const seqs = allExplicitRules().map(r=>r._seq);
+    const lo = Math.min(...seqs), hi = Math.max(...seqs);
+    const t = hi>lo ? (rule._seq-lo)/(hi-lo) : 1;
+    return recencyColor(t);
+  }
+  function teamLabel(i){ return teamCode(i)+&quot;-&quot;+esc(state.teams[i].name); }
+
   function renderMatrix(){
     const host = $(&quot;matrixArea&quot;), n = state.teams.length;
     updateDensityChip();
     if(n<2){ host.innerHTML = '<div class=&quot;empty&quot; style=&quot;margin:12px&quot;>Add at least two teams first.</div>'; return; }
     let html = '<table class=&quot;matrix&quot;><thead><tr><th>Team</th>';
-    for(let j=0;j<n;j++) html += '<th>'+teamCode(j)+'<div class=&quot;note&quot;>'+esc(state.teams[j].name)+'</div></th>';
+    for(let j=0;j<n;j++) html += '<th>'+teamLabel(j)+'</th>';
     html += '</tr></thead><tbody>';
     for(let i=0;i<n;i++){
-      html += '<tr><th>'+teamCode(i)+'<div class=&quot;note&quot;>'+esc(state.teams[i].name)+'</div></th>';
+      html += '<tr><th>'+teamLabel(i)+'</th>';
       for(let j=0;j<n;j++){
         if(i===j){ html += '<td style=&quot;background:#f8fbff&quot;>—</td>'; continue; }
         if(state.mode===&quot;symmetric&quot;){
           if(i>j){ html += '<td style=&quot;background:#f8fbff&quot;>↖ same as above</td>'; continue; }
-          const r=getPairRule(i,j);
-          html += '<td title=&quot;'+esc(CELL_TIP)+'&quot;><div class=&quot;cellbox&quot;><div class=&quot;note&quot;>'+teamCode(i)+' ↔ '+teamCode(j)+'</div><select data-kind=&quot;pair-freq&quot; data-i=&quot;'+i+'&quot; data-j=&quot;'+j+'&quot;>'+freqOptions(r.freq)+'</select><select data-kind=&quot;pair-pri&quot; data-i=&quot;'+i+'&quot; data-j=&quot;'+j+'&quot;>'+priorityOptions(r.priority)+'</select></div></td>';
+          const r=effPairRule(i,j), rc=hasPairOverride(i,j)?recencyOf(state.pairRules[pairKey(i,j)]):null;
+          html += '<td title=&quot;'+esc(CELL_TIP)+'&quot;><div class=&quot;cellbox&quot; style=&quot;'+(rc?'box-shadow:inset 0 0 0 2px '+rc+';':'')+'&quot;><div class=&quot;note&quot;>'+teamCode(i)+' ↔ '+teamCode(j)+(rc?' &amp;#128337;':' <span style=&quot;opacity:.5&quot;>(default)</span>')+'</div><select data-kind=&quot;pair-freq&quot; data-i=&quot;'+i+'&quot; data-j=&quot;'+j+'&quot;>'+freqOptions(r.freq)+'</select><select data-kind=&quot;pair-pri&quot; data-i=&quot;'+i+'&quot; data-j=&quot;'+j+'&quot;>'+priorityOptions(r.priority)+'</select></div></td>';
         } else {
-          const r=getDirRule(i,j);
-          html += '<td title=&quot;'+esc(CELL_TIP)+'&quot;><div class=&quot;cellbox&quot;><div class=&quot;note&quot;>'+teamCode(i)+' → '+teamCode(j)+'</div><select data-kind=&quot;dir-freq&quot; data-i=&quot;'+i+'&quot; data-j=&quot;'+j+'&quot;>'+freqOptions(r.freq)+'</select><select data-kind=&quot;dir-pri&quot; data-i=&quot;'+i+'&quot; data-j=&quot;'+j+'&quot;>'+priorityOptions(r.priority)+'</select></div></td>';
+          const r=effDirRule(i,j), rc=hasDirOverride(i,j)?recencyOf(state.dirRules[dirKey(i,j)]):null;
+          html += '<td title=&quot;'+esc(CELL_TIP)+'&quot;><div class=&quot;cellbox&quot; style=&quot;'+(rc?'box-shadow:inset 0 0 0 2px '+rc+';':'')+'&quot;><div class=&quot;note&quot;>'+teamCode(i)+' → '+teamCode(j)+(rc?' &amp;#128337;':' <span style=&quot;opacity:.5&quot;>(default)</span>')+'</div><select data-kind=&quot;dir-freq&quot; data-i=&quot;'+i+'&quot; data-j=&quot;'+j+'&quot;>'+freqOptions(r.freq)+'</select><select data-kind=&quot;dir-pri&quot; data-i=&quot;'+i+'&quot; data-j=&quot;'+j+'&quot;>'+priorityOptions(r.priority)+'</select></div></td>';
         }
       }
       html += '</tr>';
@@ -2413,21 +2562,170 @@ details.panel .panel-body{padding:0 12px 12px}
     html += '</tbody></table>';
     host.innerHTML = html;
   }
-  $(&quot;openMatrixBtn&quot;).onclick = ()=>{ renderMatrix(); $(&quot;matrixModal&quot;).style.display=&quot;block&quot;; };
+
+  // v2.4: List View — only pairs with an explicit override, plus an Add row
+  // v2.7: hostId lets this render into EITHER the tab inside the Matrix modal (&quot;matrixListView&quot;)
+  // OR the fully standalone List Entry modal (&quot;listModalArea&quot;) — same function, same data,
+  // two independent entry points. Controls use classes, not ids, so both can render at once
+  // without id collisions.
+  function renderMatrixList(hostId){
+    const host = $(hostId || &quot;matrixListView&quot;); if(!host) return;
+    const n = state.teams.length;
+    if(n<2){ host.innerHTML = '<div class=&quot;empty&quot; style=&quot;margin:12px&quot;>Add at least two teams first.</div>'; return; }
+    const gd = state.globalDefault;
+    const defaultDesc = gd.priority===&quot;none&quot; ? &quot;no requirement&quot; : PRIORITY_LABEL[gd.priority]+&quot; · &quot;+freqLabel(gd.freq);
+    let html = '<div class=&quot;default-note-row&quot;>Every pair not listed below follows the <strong>Global Default</strong> ('+esc(defaultDesc)+'). Only customised pairs appear here.</div>';
+    html += '<table class=&quot;list-table&quot;><thead><tr><th></th><th>Team A</th><th></th><th>Team B</th><th>Frequency</th><th>Priority</th><th></th></tr></thead><tbody>';
+    let rows = [];
+    if(state.mode===&quot;symmetric&quot;){
+      Object.keys(state.pairRules).forEach(k=>{
+        const [i,j] = k.split(&quot;|&quot;).map(Number);
+        if(i>=n || j>=n) return;
+        rows.push({i,j,rule:state.pairRules[k],dir:false,key:k});
+      });
+    } else {
+      Object.keys(state.dirRules).forEach(k=>{
+        const [i,j] = k.split(&quot;>&quot;).map(Number);
+        if(i>=n || j>=n) return;
+        rows.push({i,j,rule:state.dirRules[k],dir:true,key:k});
+      });
+    }
+    rows.sort((a,b)=>(b.rule._seq||0)-(a.rule._seq||0));
+    if(!rows.length) html += '<tr><td colspan=&quot;7&quot; class=&quot;empty&quot;>No customised pairs yet — everything follows the Global Default. Use &quot;+ Add Override&quot; below to set an exception.</td></tr>';
+    rows.forEach(row=>{
+      const rc = recencyOf(row.rule);
+      html += '<tr data-row-key=&quot;'+esc(row.key)+'&quot; data-dir=&quot;'+row.dir+'&quot;>'+
+        '<td><span class=&quot;list-swatch&quot; style=&quot;background:'+(rc||'#e5e7eb')+'&quot; title=&quot;Edit recency&quot;></span></td>'+
+        '<td><select class=&quot;list-team-a&quot; data-cur-i=&quot;'+row.i+'&quot;>'+state.teams.map((t,idx)=>'<option value=&quot;'+idx+'&quot;'+(idx===row.i?' selected':'')+'>'+esc(teamLabel(idx))+'</option>').join('')+'</select></td>'+
+        '<td style=&quot;text-align:center;color:var(--muted)&quot;>'+(row.dir?'&amp;rarr;':'&amp;harr;')+'</td>'+
+        '<td><select class=&quot;list-team-b&quot; data-cur-j=&quot;'+row.j+'&quot;>'+state.teams.map((t,idx)=>'<option value=&quot;'+idx+'&quot;'+(idx===row.j?' selected':'')+'>'+esc(teamLabel(idx))+'</option>').join('')+'</select></td>'+
+        '<td><select class=&quot;list-freq&quot;>'+freqOptions(row.rule.freq)+'</select></td>'+
+        '<td><select class=&quot;list-pri&quot;>'+priorityOptions(row.rule.priority)+'</select></td>'+
+        '<td><button class=&quot;btn small&quot; data-list-remove>Remove</button></td></tr>';
+    });
+    html += '</tbody></table>';
+    html += '<div class=&quot;list-add-row&quot;><strong>+ Add override:</strong>'+
+      '<select class=&quot;listAddA&quot;>'+state.teams.map((t,idx)=>'<option value=&quot;'+idx+'&quot;>'+esc(teamLabel(idx))+'</option>').join('')+'</select>'+
+      (state.mode===&quot;directional&quot; ? '<span>&amp;rarr;</span>' : '<span>&amp;harr;</span>')+
+      '<select class=&quot;listAddB&quot;>'+state.teams.map((t,idx)=>'<option value=&quot;'+idx+'&quot;'+(idx===1?' selected':'')+'>'+esc(teamLabel(idx))+'</option>').join('')+'</select>'+
+      '<select class=&quot;listAddFreq&quot;>'+freqOptions(gd.freq||1)+'</select>'+
+      '<select class=&quot;listAddPri&quot;>'+priorityOptions(gd.priority!==&quot;none&quot;?gd.priority:&quot;should&quot;)+'</select>'+
+      '<button class=&quot;btn primary small&quot; data-list-add>+ Add</button></div>';
+    host.innerHTML = html;
+  }
+  // refreshes every synergy view that exists, regardless of which one is currently open —
+  // cheap (just HTML string builds) and avoids any risk of one view going stale.
+  function refreshSynergyViews(){
+    renderMatrixList(&quot;matrixListView&quot;);
+    renderMatrixList(&quot;listModalArea&quot;);
+    if($(&quot;matrixModal&quot;).style.display===&quot;block&quot; &amp;&amp; $(&quot;mtabMatrix&quot;).classList.contains(&quot;active&quot;)) renderMatrix();
+  }
+
+  function switchMatrixTab(tab){
+    $(&quot;mtabMatrix&quot;).classList.toggle(&quot;active&quot;, tab===&quot;matrix&quot;);
+    $(&quot;mtabList&quot;).classList.toggle(&quot;active&quot;, tab===&quot;list&quot;);
+    $(&quot;matrixWrapView&quot;).style.display = tab===&quot;matrix&quot; ? &quot;&quot; : &quot;none&quot;;
+    $(&quot;matrixListView&quot;).style.display = tab===&quot;list&quot; ? &quot;&quot; : &quot;none&quot;;
+    if(tab===&quot;matrix&quot;) renderMatrix(); else renderMatrixList(&quot;matrixListView&quot;);
+  }
+  $(&quot;mtabMatrix&quot;).onclick = ()=> switchMatrixTab(&quot;matrix&quot;);
+  $(&quot;mtabList&quot;).onclick = ()=> switchMatrixTab(&quot;list&quot;);
+
+  $(&quot;openMatrixBtn&quot;).onclick = ()=>{
+    state.synergyReviewed = true;
+    switchMatrixTab(&quot;matrix&quot;);
+    $(&quot;matrixModal&quot;).style.display=&quot;block&quot;;
+  };
   $(&quot;closeMatrixBtn&quot;).onclick = ()=>{ $(&quot;matrixModal&quot;).style.display=&quot;none&quot;; };
   $(&quot;matrixModal&quot;).addEventListener(&quot;click&quot;, e=>{ if(e.target===$(&quot;matrixModal&quot;)) $(&quot;matrixModal&quot;).style.display=&quot;none&quot;; });
   $(&quot;guideToggleBtn&quot;).onclick = ()=>{ const g=$(&quot;guideBox&quot;); g.style.display = g.style.display===&quot;none&quot; ? &quot;block&quot; : &quot;none&quot;; };
-  $(&quot;fillDefaultsBtn&quot;).onclick = ()=>{ if(state.mode===&quot;symmetric&quot;) Object.keys(state.pairRules).forEach(k=>state.pairRules[k]=defaultRule()); else Object.keys(state.dirRules).forEach(k=>state.dirRules[k]=defaultRule()); renderMatrix(); renderCompactPreview(); updateMeters(); markDirty(); };
+  $(&quot;fillDefaultsBtn&quot;).onclick = async ()=>{
+    const n = state.mode===&quot;symmetric&quot; ? Object.keys(state.pairRules).length : Object.keys(state.dirRules).length;
+    if(n &amp;&amp; !await askConfirm(&quot;Clear all customised pairs?&quot;, &quot;This removes all &quot;+n+&quot; pair(s) you've set individually and reverts every pair to follow the Global Default. This can't be undone.&quot;, &quot;Clear Overrides&quot;, &quot;Cancel&quot;)) return;
+    if(state.mode===&quot;symmetric&quot;) state.pairRules = {}; else state.dirRules = {};
+    renderMatrix(); refreshSynergyViews(); renderCompactPreview(); updateMeters(); markDirty();
+  };
   $(&quot;matrixArea&quot;).addEventListener(&quot;input&quot;, e=>{
     const t=e.target, i=+t.dataset.i, j=+t.dataset.j;
     if(Number.isNaN(i)||Number.isNaN(j)) return;
-    if(t.dataset.kind===&quot;pair-freq&quot;) getPairRule(i,j).freq = +t.value || 0;
-    if(t.dataset.kind===&quot;pair-pri&quot;) getPairRule(i,j).priority = t.value;
-    if(t.dataset.kind===&quot;dir-freq&quot;) getDirRule(i,j).freq = +t.value || 0;
-    if(t.dataset.kind===&quot;dir-pri&quot;) getDirRule(i,j).priority = t.value;
+    if(t.dataset.kind===&quot;pair-freq&quot;) setPairRule(i,j,{freq:+t.value||0});
+    if(t.dataset.kind===&quot;pair-pri&quot;) setPairRule(i,j,{priority:t.value});
+    if(t.dataset.kind===&quot;dir-freq&quot;) setDirRule(i,j,{freq:+t.value||0});
+    if(t.dataset.kind===&quot;dir-pri&quot;) setDirRule(i,j,{priority:t.value});
     if(state.source!==&quot;Manual&quot;) setSource(&quot;Manual&quot;);
-    renderCompactPreview(); updateMeters(); updateDensityChip(); markDirty();
+    renderMatrix(); refreshSynergyViews(); renderCompactPreview(); updateMeters(); updateDensityChip(); markDirty();
   });
+
+  // v2.7: standalone List Entry modal — a fully separate entry point, no matrix required.
+  $(&quot;openListBtn&quot;).onclick = ()=>{
+    state.synergyReviewed = true;
+    renderMatrixList(&quot;listModalArea&quot;);
+    $(&quot;listModal&quot;).style.display = &quot;block&quot;;
+  };
+  $(&quot;closeListBtn&quot;).onclick = ()=>{ $(&quot;listModal&quot;).style.display = &quot;none&quot;; };
+  $(&quot;listModal&quot;).addEventListener(&quot;click&quot;, e=>{ if(e.target===$(&quot;listModal&quot;)) $(&quot;listModal&quot;).style.display=&quot;none&quot;; });
+  $(&quot;openMatrixFromListBtn&quot;).onclick = ()=>{
+    $(&quot;listModal&quot;).style.display = &quot;none&quot;;
+    switchMatrixTab(&quot;matrix&quot;);
+    $(&quot;matrixModal&quot;).style.display = &quot;block&quot;;
+  };
+
+  // v2.4/v2.7: List View interactions — edits here write through the SAME setters as the
+  // matrix, so every view is always looking at identical, live data. One pair of handlers,
+  // attached to both containers, so the standalone modal and the in-matrix tab behave identically.
+  function onSynergyListChange(e){
+    const tr = e.target.closest(&quot;tr[data-row-key]&quot;);
+    if(!tr) return;
+    const dir = tr.dataset.dir===&quot;true&quot;;
+    const oldKey = tr.dataset.rowKey;
+    if(e.target.classList.contains(&quot;list-freq&quot;) || e.target.classList.contains(&quot;list-pri&quot;)){
+      const [oi,oj] = dir ? oldKey.split(&quot;>&quot;).map(Number) : oldKey.split(&quot;|&quot;).map(Number);
+      const patch = e.target.classList.contains(&quot;list-freq&quot;) ? {freq:+e.target.value||0} : {priority:e.target.value};
+      if(dir) setDirRule(oi,oj,patch); else setPairRule(oi,oj,patch);
+      if(state.source!==&quot;Manual&quot;) setSource(&quot;Manual&quot;);
+      refreshSynergyViews(); renderCompactPreview(); updateMeters(); updateDensityChip(); markDirty();
+      return;
+    }
+    if(e.target.classList.contains(&quot;list-team-a&quot;) || e.target.classList.contains(&quot;list-team-b&quot;)){
+      const newI = +tr.querySelector(&quot;.list-team-a&quot;).value, newJ = +tr.querySelector(&quot;.list-team-b&quot;).value;
+      if(newI===newJ){ alert(&quot;Team A and Team B must be different.&quot;); refreshSynergyViews(); return; }
+      const already = dir ? hasDirOverride(newI,newJ) : hasPairOverride(newI,newJ);
+      const [oi,oj] = dir ? oldKey.split(&quot;>&quot;).map(Number) : oldKey.split(&quot;|&quot;).map(Number);
+      const isSamePair = dir ? (newI===oi &amp;&amp; newJ===oj) : (pairKey(newI,newJ)===pairKey(oi,oj));
+      if(already &amp;&amp; !isSamePair){ alert(&quot;That pair already has a customised rule — edit it in its own row instead of merging.&quot;); refreshSynergyViews(); return; }
+      const rule = dir ? state.dirRules[oldKey] : state.pairRules[oldKey];
+      if(dir){ delete state.dirRules[oldKey]; setDirRule(newI,newJ,{freq:rule.freq, priority:rule.priority}); }
+      else { delete state.pairRules[oldKey]; setPairRule(newI,newJ,{freq:rule.freq, priority:rule.priority}); }
+      if(state.source!==&quot;Manual&quot;) setSource(&quot;Manual&quot;);
+      refreshSynergyViews(); renderCompactPreview(); updateMeters(); updateDensityChip(); markDirty();
+    }
+  }
+  function onSynergyListClick(e){
+    if(e.target.closest(&quot;[data-list-remove]&quot;)){
+      const tr = e.target.closest(&quot;tr[data-row-key]&quot;);
+      const dir = tr.dataset.dir===&quot;true&quot;, key = tr.dataset.rowKey;
+      if(dir) delete state.dirRules[key]; else delete state.pairRules[key];
+      if(state.source!==&quot;Manual&quot;) setSource(&quot;Manual&quot;);
+      refreshSynergyViews(); renderCompactPreview(); updateMeters(); updateDensityChip(); markDirty();
+      return;
+    }
+    if(e.target.closest(&quot;[data-list-add]&quot;)){
+      const row = e.target.closest(&quot;.list-add-row&quot;);
+      const a = +row.querySelector(&quot;.listAddA&quot;).value, b = +row.querySelector(&quot;.listAddB&quot;).value;
+      if(a===b){ alert(&quot;Team A and Team B must be different.&quot;); return; }
+      const dir = state.mode===&quot;directional&quot;;
+      const already = dir ? hasDirOverride(a,b) : hasPairOverride(a,b);
+      if(already){ alert(&quot;That pair already has a customised rule — edit it in the list above.&quot;); return; }
+      const freq = +row.querySelector(&quot;.listAddFreq&quot;).value||0, pri = row.querySelector(&quot;.listAddPri&quot;).value;
+      if(dir) setDirRule(a,b,{freq,priority:pri}); else setPairRule(a,b,{freq,priority:pri});
+      if(state.source!==&quot;Manual&quot;) setSource(&quot;Manual&quot;);
+      refreshSynergyViews(); renderCompactPreview(); updateMeters(); updateDensityChip(); markDirty();
+    }
+  }
+  $(&quot;matrixListView&quot;).addEventListener(&quot;change&quot;, onSynergyListChange);
+  $(&quot;matrixListView&quot;).addEventListener(&quot;click&quot;, onSynergyListClick);
+  $(&quot;listModalArea&quot;).addEventListener(&quot;change&quot;, onSynergyListChange);
+  $(&quot;listModalArea&quot;).addEventListener(&quot;click&quot;, onSynergyListClick);
 
   // ───────────────────────────────────────────────
   // B1 — ONBOARDING PRESETS
@@ -2460,11 +2758,12 @@ details.panel .panel-body{padding:0 12px 12px}
     $(&quot;seats&quot;).value = p.seats;
     state.teams = p.teams.map(t=>({...t}));
     syncRulesAfterTeamChange();
-    p.synergy.forEach(([i,j,pri,fr])=>{ state.pairRules[pairKey(i,j)] = {priority:pri, freq:fr}; });
+    p.synergy.forEach(([i,j,pri,fr])=>{ setPairRule(i,j,{priority:pri, freq:fr}); });
     setMode(&quot;symmetric&quot;);
     setSource(&quot;Preset (&quot;+key.charAt(0).toUpperCase()+key.slice(1)+&quot;)&quot;);
     syncGdInputs();
     renderTeams(); renderCounters(); renderCompactPreview(); updateMeters(); markDirty();
+    state.synergyReviewed = false;
     $(&quot;resultsArea&quot;).innerHTML = '<div class=&quot;empty&quot;>Preset loaded — review teams and synergy, then click Run Solver. Open the matrix to fine-tune pair rules.</div>';
   }
   document.querySelectorAll(&quot;.preset-card&quot;).forEach(b=> b.onclick = ()=>applyPreset(b.dataset.preset));
@@ -2759,6 +3058,16 @@ self.onmessage = function(ev){
   // RUN SOLVER
   // ───────────────────────────────────────────────
   $(&quot;runBtn&quot;).addEventListener(&quot;click&quot;, async function(){
+    // v2.4: bulk-filled synergy (Excel/AI/preset) hasn't necessarily been looked at yet —
+    // ask before running, but never for hand-typed data (that's already been reviewed as typed).
+    if(state.teams.length>=2 &amp;&amp; !state.synergyReviewed){
+      const proceed = await askConfirm(
+        &quot;Review your synergy rules first?&quot;,
+        &quot;Your team synergy came from <strong>&quot;+esc(state.source)+&quot;</strong> and hasn't been opened for review yet. Quickly check the customised pairs before running — the solver will treat every rule as written.&quot;,
+        &quot;Run Anyway&quot;, &quot;Review First&quot;);
+      if(!proceed){ $(&quot;openMatrixBtn&quot;).click(); return; }
+      state.synergyReviewed = true;
+    }
     const findings = localValidation();
     const ok = renderValidation(findings);
     if(!ok){
@@ -3132,7 +3441,7 @@ self.onmessage = function(ev){
       s += '<rect class=&quot;grow&quot; style=&quot;animation-delay:'+(i*0.08+0.05)+'s&quot; x=&quot;'+x+'&quot; y=&quot;'+Y(v)+'&quot; width=&quot;'+barW+'&quot; height=&quot;'+Math.max(0,(v/maxY)*plotH)+'&quot; rx=&quot;3&quot; fill=&quot;'+(v>seatCap?'#dc2626':'#2473ff')+'&quot;/>';
       s += '<text class=&quot;fadein&quot; x=&quot;'+Xc(i)+'&quot; y=&quot;'+(Y(v)-6)+'&quot; font-size=&quot;11&quot; font-weight=&quot;700&quot; fill=&quot;#172033&quot; text-anchor=&quot;middle&quot;>'+Math.round(v)+'</text>';
       s += '<text x=&quot;'+Xc(i)+'&quot; y=&quot;'+(h-12)+'&quot; font-size=&quot;11&quot; fill=&quot;#667085&quot; text-anchor=&quot;middle&quot;>'+SHORT[i]+'</text>';
-      s += '<rect class=&quot;hoverzone&quot; data-day=&quot;'+i+'&quot; x=&quot;'+(pad.l+plotW*i/5)+'&quot; y=&quot;'+pad.t+'&quot; width=&quot;'+(plotW/5)+'&quot; height=&quot;'+plotH+'&quot; rx=&quot;4&quot;/>';
+      s += '<rect class=&quot;hoverzone&quot; fill=&quot;transparent&quot; data-day=&quot;'+i+'&quot; x=&quot;'+(pad.l+plotW*i/5)+'&quot; y=&quot;'+pad.t+'&quot; width=&quot;'+(plotW/5)+'&quot; height=&quot;'+plotH+'&quot; rx=&quot;4&quot;/>';
     });
     s += '</svg>';
     host.innerHTML = s;
@@ -3140,8 +3449,8 @@ self.onmessage = function(ev){
   }
   function drawLayered(host, loads, anchorDensity, allTogetherFlags, avgValue, seatCap, result){
     if(!host) return;
-    const w = host.clientWidth||900, h = 280;
-    const pad = {l:52, r:22, t:22, b:38};
+    const w = host.clientWidth||900, h = 300; // v2.6: +20px to fit the caption strip below the day row without crowding it
+    const pad = {l:52, r:22, t:22, b:58};
     const plotW = w-pad.l-pad.r, plotH = h-pad.t-pad.b;
     const pctLoads = loads.map(v=> seatCap ? v/seatCap*100 : 0);
     const avgPct = seatCap ? avgValue/seatCap*100 : 0;
@@ -3177,18 +3486,36 @@ self.onmessage = function(ev){
     let aline = 'M '+X(0)+' '+Y(aScaled[0]);
     for(let i=1;i<5;i++) aline += ' L '+X(i)+' '+Y(aScaled[i]);
     s += '<path d=&quot;'+aline+'&quot; fill=&quot;none&quot; stroke=&quot;#11a8dc&quot; stroke-width=&quot;2&quot; class=&quot;lineanim&quot; style=&quot;animation-delay:.35s&quot;/>';
-    // markers + labels
+    // v2.6: markers + labels — edge-aware anchoring (fixes Friday's label clipping past the
+    // right edge) and NO floating annotation text near the points (fixes the pile-up that
+    // happened whenever peak/anchor-zone/all-together landed on the same day — up to three
+    // separate text labels used to stack directly on top of each other). Special days are
+    // instead called out in one compact caption strip below the plot, which has room to lay
+    // several facts out horizontally with zero collision risk regardless of which days coincide.
     const peak = Math.max(...pctLoads), peakIdx = pctLoads.indexOf(peak);
     const anchorIdx = aScaled.indexOf(Math.max(...aScaled));
     const fullIdx = allTogetherFlags.findIndex(Boolean);
+    function edgeAnchor(i){ return i===0 ? 'start' : i===4 ? 'end' : 'middle'; }
+    function edgeX(i){ return i===0 ? X(i)+3 : i===4 ? X(i)-3 : X(i); }
     for(let i=0;i<5;i++){
-      s += '<circle class=&quot;fadein&quot; style=&quot;animation-delay:'+(0.9+i*0.06)+'s&quot; cx=&quot;'+X(i)+'&quot; cy=&quot;'+Y(pctLoads[i])+'&quot; r=&quot;4&quot; fill=&quot;#2473ff&quot;/>';
-      s += '<text class=&quot;fadein&quot; style=&quot;animation-delay:'+(0.9+i*0.06)+'s&quot; x=&quot;'+X(i)+'&quot; y=&quot;'+(Y(pctLoads[i])-10)+'&quot; font-size=&quot;10.5&quot; fill=&quot;#172033&quot; text-anchor=&quot;middle&quot;>'+Math.round(pctLoads[i])+'% / '+Math.round(loads[i])+'</text>';
-      s += '<text x=&quot;'+X(i)+'&quot; y=&quot;'+(h-12)+'&quot; font-size=&quot;11&quot; fill=&quot;#667085&quot; text-anchor=&quot;middle&quot;>'+SHORT[i]+'</text>';
+      const isPeak = i===peakIdx;
+      s += '<circle class=&quot;fadein&quot; style=&quot;animation-delay:'+(0.9+i*0.06)+'s&quot; cx=&quot;'+X(i)+'&quot; cy=&quot;'+Y(pctLoads[i])+'&quot; r=&quot;'+(isPeak?6:4)+'&quot; fill=&quot;'+(isPeak?'#0b3fa8':'#2473ff')+'&quot;'+(isPeak?' stroke=&quot;#fff&quot; stroke-width=&quot;1.5&quot;':'')+'/>';
+      s += '<text class=&quot;fadein&quot; style=&quot;animation-delay:'+(0.9+i*0.06)+'s&quot; x=&quot;'+edgeX(i)+'&quot; y=&quot;'+(Y(pctLoads[i])-11)+'&quot; font-size=&quot;10.5&quot; font-weight=&quot;'+(isPeak?'800':'400')+'&quot; fill=&quot;'+(isPeak?'#0b3fa8':'#172033')+'&quot; text-anchor=&quot;'+edgeAnchor(i)+'&quot;>'+Math.round(pctLoads[i])+'% / '+Math.round(loads[i])+'</text>';
+      s += '<text x=&quot;'+edgeX(i)+'&quot; y=&quot;'+(h-36)+'&quot; font-size=&quot;11&quot; fill=&quot;#667085&quot; text-anchor=&quot;'+edgeAnchor(i)+'&quot;>'+SHORT[i]+'</text>';
+      if(i===anchorIdx) s += '<circle class=&quot;fadein&quot; style=&quot;animation-delay:1.15s&quot; cx=&quot;'+X(i)+'&quot; cy=&quot;'+Y(aScaled[i])+'&quot; r=&quot;5&quot; fill=&quot;#11a8dc&quot; stroke=&quot;#fff&quot; stroke-width=&quot;1.5&quot;/>';
     }
-    s += '<text class=&quot;fadein&quot; style=&quot;animation-delay:1.1s&quot; x=&quot;'+X(peakIdx)+'&quot; y=&quot;'+(Y(peak)-26)+'&quot; font-size=&quot;11&quot; fill=&quot;#2473ff&quot; text-anchor=&quot;middle&quot; font-weight=&quot;700&quot;>Peak '+Math.round(peak)+'%</text>';
-    s += '<circle class=&quot;fadein&quot; style=&quot;animation-delay:1.15s&quot; cx=&quot;'+X(anchorIdx)+'&quot; cy=&quot;'+Y(aScaled[anchorIdx])+'&quot; r=&quot;5&quot; fill=&quot;#11a8dc&quot;/>';
-    s += '<text class=&quot;fadein&quot; style=&quot;animation-delay:1.15s&quot; x=&quot;'+X(anchorIdx)+'&quot; y=&quot;'+(Y(aScaled[anchorIdx])-12)+'&quot; font-size=&quot;10&quot; fill=&quot;#11a8dc&quot; text-anchor=&quot;middle&quot;>Anchor zone</text>';
+    // caption strip — one line, several facts, laid out with guaranteed spacing
+    const facts = [
+      {c:'#0b3fa8', t:'\u25CF Peak: '+SHORT[peakIdx]+' ('+Math.round(peak)+'%)'},
+      {c:'#11a8dc', t:'\u25CF Anchor zone: '+SHORT[anchorIdx]}
+    ];
+    if(fullIdx>=0) facts.push({c:'#dc2626', t:'\u25CF All together: '+SHORT[fullIdx]});
+    let capX = pad.l;
+    const capY = h-12;
+    facts.forEach(f=>{
+      s += '<text class=&quot;fadein&quot; style=&quot;animation-delay:1.2s&quot; x=&quot;'+capX+'&quot; y=&quot;'+capY+'&quot; font-size=&quot;10&quot; font-weight=&quot;700&quot; fill=&quot;'+f.c+'&quot;>'+f.t+'</text>';
+      capX += f.t.length*5.6+18;
+    });
     if(fullIdx>=0){
       s += '<circle class=&quot;fadein&quot; style=&quot;animation-delay:1.2s&quot; cx=&quot;'+X(fullIdx)+'&quot; cy=&quot;'+Y(pctLoads[fullIdx])+'&quot; r=&quot;6&quot; fill=&quot;#dc2626&quot;/>';
       s += '<text class=&quot;fadein&quot; style=&quot;animation-delay:1.2s&quot; x=&quot;'+X(fullIdx)+'&quot; y=&quot;'+(Y(pctLoads[fullIdx])-40)+'&quot; font-size=&quot;10&quot; fill=&quot;#dc2626&quot; text-anchor=&quot;middle&quot;>All together</text>';
@@ -3197,7 +3524,7 @@ self.onmessage = function(ev){
     for(let i=0;i<5;i++){
       const bx = i===0 ? pad.l : (X(i-1)+X(i))/2;
       const bw = i===0 ? (X(0)+X(1))/2 - pad.l : i===4 ? pad.l+plotW-(X(3)+X(4))/2 : (X(i+1)-X(i-1))/2;
-      s += '<rect class=&quot;hoverzone&quot; data-day=&quot;'+i+'&quot; x=&quot;'+bx+'&quot; y=&quot;'+pad.t+'&quot; width=&quot;'+bw+'&quot; height=&quot;'+plotH+'&quot;/>';
+      s += '<rect class=&quot;hoverzone&quot; fill=&quot;transparent&quot; data-day=&quot;'+i+'&quot; x=&quot;'+bx+'&quot; y=&quot;'+pad.t+'&quot; width=&quot;'+bw+'&quot; height=&quot;'+plotH+'&quot;/>';
     }
     s += '</svg>';
     host.innerHTML = s;
@@ -3331,6 +3658,7 @@ self.onmessage = function(ev){
   // rebuilds innerHTML, which silently destroys per-element onclick bindings if
   // any later code path re-renders without rebinding — delegation is immune.
   function onResultsClick(e){
+    if(e.target.closest('#exportSummaryBtn')){ exportSummaryReport(); return; }
     const gBtn = e.target.closest('[data-solution-group]');
     if(gBtn){
       state.selectedGroup = +gBtn.dataset.solutionGroup;
@@ -3504,7 +3832,7 @@ self.onmessage = function(ev){
       '<button class=&quot;btn ai small&quot; id=&quot;aiCompareBtn&quot; '+(aiOn?'':'disabled title=&quot;Switch on AI Assistance and connect a key in the sidebar first&quot;')+'>&amp;#10024; Compare distinct solutions</button>'+
       '<button class=&quot;btn ai small&quot; id=&quot;aiCommsBtn&quot; '+(aiOn?'':'disabled title=&quot;Switch on AI Assistance and connect a key in the sidebar first&quot;')+'>&amp;#10024; Draft communications</button>'+
       '</div></div>'+
-      '<div style=&quot;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:0&quot;><div class=&quot;tabs&quot;><button class=&quot;tab active&quot; data-tab=&quot;insights&quot;>Insights</button><button class=&quot;tab&quot; data-tab=&quot;intelligence&quot;>Intelligence</button><button class=&quot;tab&quot; data-tab=&quot;calendar&quot;>Work Calendar</button></div><button onclick=&quot;exportSummaryReport()&quot; style=&quot;margin-top:4px;padding:8px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:11px;white-space:nowrap&quot;>&amp;#128202; Export Summary Report</button></div>'+
+      '<div style=&quot;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:0&quot;><div class=&quot;tabs&quot;><button class=&quot;tab active&quot; data-tab=&quot;insights&quot;>Insights</button><button class=&quot;tab&quot; data-tab=&quot;intelligence&quot;>Intelligence</button><button class=&quot;tab&quot; data-tab=&quot;calendar&quot;>Work Calendar</button></div><button id=&quot;exportSummaryBtn&quot; style=&quot;margin-top:4px;padding:8px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:11px;white-space:nowrap&quot;>&amp;#128202; Export Executive Brief'+(aiOn?' <span style=&quot;opacity:.85;font-weight:400&quot;>(+ AI page)</span>':'')+'</button></div>'+
       '<div class=&quot;tab-panel active&quot; data-panel=&quot;insights&quot;>'+
         '<div class=&quot;result-block&quot;><h3>Executive Summary</h3><div class=&quot;list&quot;>'+
           '<div class=&quot;list-item&quot;>Out of '+state.totalIterations+' iterations, this is ranked option '+rankLabel+' of '+(state.groups?state.groups.length:1)+' structurally distinct working solutions. Most teams land around '+avgDays+' office days per week.</div>'+
@@ -3848,7 +4176,7 @@ self.onmessage = function(ev){
       '<div class=&quot;list-item&quot;>Scenario loaded: <strong>'+esc(summary.scenario || &quot;-&quot;)+'</strong></div>'+
       '<div class=&quot;list-item&quot;>Teams loaded: <strong>'+summary.teams+'</strong> · Synergy rows loaded: <strong>'+summary.synergy+'</strong></div>'+
       (summary.issues.length ? '<div class=&quot;list-item&quot;><strong>Issues found:</strong><br>'+summary.issues.map(x=>'• '+esc(x)).join('<br>')+'</div>' : '<div class=&quot;list-item&quot;>No import issues found.</div>')+
-      '<div class=&quot;list-item&quot;>Review the populated UI and click <strong>Run Solver</strong>.</div><div class=&quot;list-item&quot;>Parser note: this import engine auto-detects header rows and tolerates title rows above the headers. Pairs not listed on the Synergy sheet use the Global Synergy Default.</div>'+
+      '<div class=&quot;list-item&quot;>Review the populated UI and click <strong>Run Solver</strong> — you\'ll be prompted to review synergy first if you skip straight to Run.</div><div class=&quot;list-item&quot;>Parser note: this import engine auto-detects header rows and tolerates title rows above the headers. Pairs not listed on the Synergy sheet use the Global Synergy Default.</div>'+
       '</div></div>';
   }
   function resetImport(){
@@ -3963,14 +4291,22 @@ self.onmessage = function(ev){
     } else if(hasMatrix){
       useMatrix = true;
     }
+    // v2.4: only store an override when a row actually DIFFERS from the file's own stated
+    // Global Default (already parsed from the Setup sheet above) — rows that just restate the
+    // default are counted but not materialized, matching how the app itself distinguishes them.
+    const matchesGlobalDefault = rule => rule.priority===state.globalDefault.priority &amp;&amp; Math.abs((+rule.freq||0)-(state.globalDefault.freq||0))<0.001;
+    let matchedDefaultCount = 0;
+    const declaredDefault = state.globalDefault.priority!==&quot;none&quot;; // key always exists in the sheet; only a non-&quot;None&quot; value counts as declared
     if(useMatrix){
-      matrixRules.forEach(m=>{ state.pairRules[pairKey(m.i,m.j)] = m.rule; loadedSynergy++; });
+      matrixRules.forEach(m=>{
+        if(matchesGlobalDefault(m.rule)){ matchedDefaultCount++; return; }
+        setPairRule(m.i, m.j, {freq:m.rule.freq, priority:m.rule.priority}); loadedSynergy++;
+      });
       matrixErrors.forEach(e2=>issues.push(&quot;Matrix Input: &quot;+e2));
-      issues.push(&quot;Synergy source: Matrix Input sheet (&quot;+matrixRules.length+&quot; code(s))&quot;+(hasLinear?&quot; — chosen over the linear Synergy sheet.&quot;:&quot;.&quot;));
+      issues.push(&quot;Synergy source: Matrix Input sheet — &quot;+loadedSynergy+&quot; override(s) imported&quot;+(matchedDefaultCount?&quot;, &quot;+matchedDefaultCount+&quot; cell(s) matched the stated Global Default and were treated as confirming it (not stored as separate overrides)&quot;:&quot;&quot;)+&quot;.&quot;+(hasLinear?&quot; Chosen over the linear Synergy sheet.&quot;:&quot;&quot;));
       needsDirectional = false; // matrix is symmetric-only
     } else {
       if(matrixErrors.length &amp;&amp; !hasLinear) matrixErrors.forEach(e2=>issues.push(&quot;Matrix Input: &quot;+e2));
-      if(hasLinear) issues.push(&quot;Synergy source: linear Synergy sheet.&quot;+(hasMatrix?&quot; The Matrix Input codes were ignored per your choice.&quot;:&quot;&quot;));
       linearRows.forEach(r => {
       const a = String(getField(r, [&quot;Team A Name&quot;,&quot;Team A&quot;,&quot;Team A Alias&quot;])).trim();
       const b = String(getField(r, [&quot;Team B Name&quot;,&quot;Team B&quot;,&quot;Team B Alias&quot;])).trim();
@@ -3987,16 +4323,27 @@ self.onmessage = function(ev){
       if(freq===undefined){ issues.push('Invalid synergy frequency &quot;'+fLabel+'&quot; for '+a+' and '+b+'.'); return; }
       if(![&quot;must&quot;,&quot;should&quot;,&quot;good&quot;,&quot;none&quot;].includes(priority)){ issues.push('Invalid priority &quot;'+priority+'&quot; for '+a+' and '+b+'.'); return; }
       const rule = {freq, priority};
-      if(dir===&quot;Both&quot;) state.pairRules[pairKey(ia,ib)] = rule;
-      else if(dir===&quot;A->B&quot;){ state.dirRules[dirKey(ia,ib)] = rule; needsDirectional = true; }
-      else if(dir===&quot;B->A&quot;){ state.dirRules[dirKey(ib,ia)] = rule; needsDirectional = true; }
+      if(dir===&quot;Both&quot;){
+        if(matchesGlobalDefault(rule)){ matchedDefaultCount++; return; }
+        setPairRule(ia, ib, rule);
+      }
+      else if(dir===&quot;A->B&quot;){ needsDirectional = true; if(matchesGlobalDefault(rule)){ matchedDefaultCount++; return; } setDirRule(ia, ib, rule); }
+      else if(dir===&quot;B->A&quot;){ needsDirectional = true; if(matchesGlobalDefault(rule)){ matchedDefaultCount++; return; } setDirRule(ib, ia, rule); }
       else { issues.push('Invalid direction &quot;'+dir+'&quot; for '+a+' and '+b+'.'); return; }
       loadedSynergy++;
       });
+      if(hasLinear){
+        let note = &quot;Synergy source: linear Synergy sheet — &quot;+loadedSynergy+&quot; override(s) imported&quot;;
+        if(matchedDefaultCount) note += &quot;, &quot;+matchedDefaultCount+&quot; row(s) matched the stated Global Default and were treated as confirming it (not stored as separate overrides)&quot;;
+        if(!declaredDefault &amp;&amp; (loadedSynergy+matchedDefaultCount)>0) note += &quot;. This file didn't declare a Global Default in the Setup sheet, so every row was imported as an explicit override — set 'Global Default Priority/Frequency' next time to keep only real exceptions&quot;;
+        note += &quot;.&quot;+(hasMatrix?&quot; The Matrix Input codes were ignored per your choice.&quot;:&quot;&quot;);
+        issues.push(note);
+      }
     }
 
     setMode(needsDirectional ? &quot;directional&quot; : &quot;symmetric&quot;);
     setSource(&quot;Excel Import&quot;);
+    state.synergyReviewed = false;
     syncGdInputs();
     renderTeams(); renderCounters(); renderCompactPreview(); updateMeters(); markDirty();
     showImportSummary({scenario:$(&quot;scenarioName&quot;).value, teams:state.teams.length, synergy:loadedSynergy, issues});
@@ -4246,16 +4593,45 @@ self.onmessage = function(ev){
   // ───────────────────────────────────────────────
   // SUMMARY REPORT — multi-page A4 PDF (NBD section removed)
   // ───────────────────────────────────────────────
-  window.exportSummaryReport=function(){
+  // v2.8: jsPDF's standard fonts (Helvetica/Times/Courier) only support WinAnsi encoding --
+  // ASCII plus common Latin-1 accented characters and a handful of typographic symbols
+  // (em/en dash, bullet, ellipsis, curly quotes, middot). Anything outside that -- emoji,
+  // dingbats, variation selectors -- renders as garbled mojibake rather than failing loudly,
+  // so free text (AI narrative, user-typed scenario/team names) needs sanitizing before
+  // it reaches doc.text() or splitTextToSize().
+  function pdfSafe(str){
+    if(!str) return str;
+    return String(str)
+      .replace(/[\u2018\u2019]/g, &quot;'&quot;).replace(/[\u201C\u201D]/g, '&quot;')
+      .replace(/\u2026/g, '...')
+      .split('').filter(ch=>{
+        const cp = ch.codePointAt(0);
+        if(cp===0x0A || cp===0x09) return true;              // newline, tab -- structural, must survive
+        if(cp>=0x20 &amp;&amp; cp<=0x7E) return true;                // ASCII printable
+        if(cp>=0xA0 &amp;&amp; cp<=0xFF) return true;                // Latin-1 supplement (accents, currency)
+        if([0x2013,0x2014,0x2022,0x00B7].includes(cp)) return true; // en/em dash, bullet, middot
+        return false;                                        // drop emoji, dingbats, variation selectors, etc.
+      }).join('');
+  }
+  window.exportSummaryReport=async function(){
     if(!state.best || !state.solutions || !state.solutions.length){
       alert('Please run the solver first.');
       return;
     }
+    if(typeof jspdf==='undefined' || !window.jspdf){
+      alert('PDF engines not loaded.');
+      return;
+    }
+    const btn = $('exportSummaryBtn');
+    const origLabel = btn ? btn.innerHTML : '';
+    const aiOn = !!(state.aiEnabled &amp;&amp; state.ai.key &amp;&amp; state.ai.model);
+    let aiNarrative = null;
+    if(aiOn){
+      if(btn){ btn.disabled = true; btn.innerHTML = '<span class=&quot;spinner&quot;></span> Generating AI page\u2026'; }
+      try{ aiNarrative = await generatePDFNarrative(); }
+      catch(e){ aiNarrative = null; console.error('AI narrative for PDF failed:', e); }
+    }
     try{
-      if(typeof jspdf==='undefined' || !window.jspdf){
-        alert('PDF engines not loaded.');
-        return;
-      }
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
       const pw = doc.internal.pageSize.getWidth();
@@ -4272,201 +4648,235 @@ self.onmessage = function(ev){
       const minIdx  = evald.loads.indexOf(Math.min.apply(null, evald.loads));
       const peakUtil = seats ? Math.round(evald.loads[peakIdx]/seats*100) : 0;
       const avgUtil  = seats ? Math.round(evald.avg/seats*100) : 0;
+      const trust = result.trust || trustMetrics(result);
+      const rs = realizedStringency(result);
+      const W2 = state.trustWeights;
 
-      function newPage(){ doc.addPage(); y = margin; }
-      function ensureHeight(h){ if(y + h > ph - margin){ newPage(); } }
+      function ensureHeight(h){ if(y + h > ph - margin){ doc.addPage(); y = margin; } }
       function section(title){
-        ensureHeight(12);
-        doc.setFont('Helvetica','bold');
-        doc.setFontSize(12);
-        doc.setTextColor(36,115,255);
+        ensureHeight(9);
+        doc.setFont('Helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(36,115,255);
         doc.text(title, margin, y);
-        doc.setDrawColor(221,226,236);
-        doc.setLineWidth(0.2);
-        doc.line(margin, y+2, margin+cw, y+2);
-        y += 8;
-        doc.setTextColor(20,24,31);
+        doc.setDrawColor(221,226,236); doc.setLineWidth(0.2);
+        doc.line(margin, y+1.8, margin+cw, y+1.8);
+        y += 6.5; doc.setTextColor(20,24,31);
       }
-      function txt(t, sz=10){
-        ensureHeight(4);
-        doc.setFont('Helvetica','normal');
-        doc.setFontSize(sz);
+      function txt(t, sz=9){
+        ensureHeight(3.6);
+        doc.setFont('Helvetica','normal'); doc.setFontSize(sz);
         const lines = doc.splitTextToSize(t, cw-2);
-        lines.forEach(l=>{ ensureHeight(sz*0.35); doc.text(l, margin+1, y); y += sz*0.35+0.5; });
+        lines.forEach(l=>{ ensureHeight(sz*0.36); doc.text(l, margin+1, y); y += sz*0.36+0.4; });
       }
-      function kpiRow(){
-        ensureHeight(20);
-        const bw = (cw-9)/4, bh = 16;
-        const items = [
-          {l:'Employees', v:String(totalEmp)},
-          {l:'Seats', v:String(seats)},
-          {l:'Peak day', v:SHORT[peakIdx]},
-          {l:'Avg util', v:avgUtil+'%'}
-        ];
+      function kpiRow(items){
+        ensureHeight(16);
+        const bw = (cw-(items.length-1)*2.5)/items.length, bh = 18;
         items.forEach((k,i)=>{
           const x = margin + i*(bw+2.5);
           doc.setDrawColor(221,226,236);
-          doc.setFillColor(245,248,255);
+          doc.setFillColor(k.warn?254:245, k.warn?242:248, k.warn?242:255);
           doc.rect(x, y, bw, bh, 'FD');
-          doc.setFont('Helvetica','bold');
-          doc.setFontSize(10);
-          doc.setTextColor(36,115,255);
-          doc.text(k.v, x+bw/2, y+6, {align:'center'});
-          doc.setFont('Helvetica','normal');
-          doc.setFontSize(7);
+          doc.setFont('Helvetica','bold'); doc.setFontSize(9.5);
+          doc.setTextColor(k.warn?220:36, k.warn?38:115, k.warn?38:255);
+          doc.text(k.v, x+bw/2, y+7.5, {align:'center'});
+          doc.setFont('Helvetica','normal'); doc.setFontSize(6.8);
           doc.setTextColor(102,112,133);
-          doc.text(k.l, x+bw/2, y+12, {align:'center'});
+          doc.text(k.l, x+bw/2, y+13.5, {align:'center'});
         });
-        y += bh + 3;
-        doc.setTextColor(20,24,31);
+        y += bh + 5; doc.setTextColor(20,24,31);
       }
-      function table(h, rows){
-        const colW = cw / h.length;
-        ensureHeight(8);
-        doc.setFont('Helvetica','bold');
-        doc.setFontSize(8);
-        doc.setFillColor(245,248,255);
-        doc.setDrawColor(200,200,200);
-        doc.rect(margin, y-4, cw, 6, 'FD');
-        h.forEach((x,i)=>doc.text(String(x), margin+i*colW+0.5, y));
-        y += 5;
-        doc.setFont('Helvetica','normal');
-        doc.setFontSize(8);
-        rows.forEach((r,ri)=>{
-          ensureHeight(4);
-          if(ri%2===0){ doc.setFillColor(252,253,255); doc.rect(margin,y-3,cw,4,'F'); }
-          r.forEach((c,ci)=>doc.text(String(c), margin+ci*colW+0.5, y));
-          y += 4;
-        });
-      }
-
-      // PAGE 1: COVER
-      doc.setFillColor(255,255,255);
-      doc.rect(0,0,pw,ph,'F');
-      doc.setFillColor(36,115,255);
-      doc.rect(0,0,pw,16,'F');
-      doc.setFont('Helvetica','bold');
-      doc.setFontSize(11);
-      doc.setTextColor(255,255,255);
-      doc.text('Hybrid Work Policy Summary — '+getScenarioName(), margin, 10);
-      y = 22;
-
-      section('Overview');
-      kpiRow();
-      txt('This report summarises the selected hybrid work schedule for your organisation.');
-      txt('Solver evaluated '+state.totalIterations+' iterations, returned '+state.solutions.length+' solutions. This is Solution '+(state.selectedSolution+1)+'.');
-      const trust = result.trust || trustMetrics(result);
-      txt('Trust Score '+trust.overall+'/100 — Seat fit '+trust.seatFit+', Synergy fit '+trust.synergyFit+', Attendance fit '+trust.attendanceFit+', Balance '+trust.balanceFit+'.');
-
-      section('Planned occupancy');
-      const weekPD = evald.loads.reduce((a,b)=>a+b,0);
-      txt('Eligible effective headcount: '+totalEffHC()+' people. Planned daily attendance: '+Math.round(weekPD/5)+' on average ('+avgUtil+'% of seats).');
-      txt('Week total: '+weekPD+' person-days of '+(seats*5)+' available ('+Math.round(weekPD/(seats*5)*100)+'%). Peak '+SHORT[peakIdx]+' ('+evald.loads[peakIdx]+'), trough '+SHORT[minIdx]+' ('+evald.loads[minIdx]+').');
-
-      section('Daily occupancy');
-      const dayRows = SHORT.map((d, i)=>{
-        const load = evald.loads[i];
-        const util = seats ? Math.round(load/seats*100) : 0;
-        const band = util>90?'High':util>70?'Good':'Light';
-        return [d, load, util+'%', band];
-      });
-      table(['Day','Load','Util','Status'], dayRows);
-
-      // UTILISATION CHART
-      newPage();
-      section('Daily utilisation graph');
-      txt('Occupancy as percentage of available seats across the week.');
-      ensureHeight(85);
-      const utilCanvas = document.createElement('canvas');
-      utilCanvas.width = 500; utilCanvas.height = 280;
-      const ctx = utilCanvas.getContext('2d');
-      if(ctx){
-        const barW = (utilCanvas.width-40) / 5;
-        const scale = (utilCanvas.height-60) / Math.max(seats,1);
-        ctx.fillStyle='#eef4fb'; ctx.fillRect(0,0,utilCanvas.width,utilCanvas.height);
-        ctx.strokeStyle='#d8e3f0'; ctx.lineWidth=1;
+      // Real vector bar chart -- no canvas/raster, sharp at any zoom, consistent thresholds with the KPI/table text
+      function miniChart(h){
+        ensureHeight(h+6);
+        const chartTop = y, plotH = h-8, plotW = cw;
+        const barW = Math.min(20, plotW/5*0.45);
+        const maxY = Math.max(seats, ...evald.loads, 1);
+        doc.setDrawColor(217,119,6); doc.setLineWidth(0.4); doc.setLineDashPattern([1.2,1], 0);
+        const seatY = chartTop + plotH - (seats/maxY)*plotH;
+        doc.line(margin, seatY, margin+cw, seatY);
+        doc.setLineDashPattern([], 0);
+        doc.setFont('Helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(217,119,6);
+        doc.text('Seats: '+seats, margin+cw, seatY-1.2, {align:'right'});
         SHORT.forEach((d,i)=>{
-          const h = evald.loads[i]*scale;
-          const x = 30 + i*barW + barW/2;
-          const y0 = utilCanvas.height-40;
-          ctx.fillStyle = evald.loads[i]>seats*0.8?'#dc2626':evald.loads[i]>seats*0.5?'#2473ff':'#16a34a';
-          ctx.fillRect(x-barW/3, y0-h, barW*0.6, h);
-          ctx.fillStyle='#172033';
-          ctx.font='12px Arial';
-          ctx.textAlign='center';
-          ctx.fillText(d, x, utilCanvas.height-15);
-          ctx.fillText(evald.loads[i], x, y0-h-5);
+          const v = evald.loads[i];
+          const bx = margin + (plotW/5)*i + (plotW/5-barW)/2;
+          const bh = Math.max(0.5, (v/maxY)*plotH);
+          const by = chartTop + plotH - bh;
+          const over = v>seats*0.9, warn = v>seats*0.7;
+          doc.setFillColor(over?220:warn?36:22, over?38:warn?115:163, over?38:warn?255:74);
+          doc.rect(bx, by, barW, bh, 'F');
+          doc.setFont('Helvetica','bold'); doc.setFontSize(7); doc.setTextColor(20,24,31);
+          doc.text(String(v), bx+barW/2, by-1.5, {align:'center'});
+          doc.setFont('Helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(102,112,133);
+          doc.text(d, bx+barW/2, chartTop+plotH+4.5, {align:'center'});
         });
-        ctx.fillStyle='#667085';
-        ctx.font='11px Arial';
-        ctx.textAlign='left';
-        for(let i=0;i<=5;i++){ const val=Math.round(i*seats/5); ctx.fillText(val, 2, utilCanvas.height-40-(i*(utilCanvas.height-100)/5)+4); }
+        y = chartTop + h + 2; doc.setTextColor(20,24,31);
       }
-      const utilImg = utilCanvas.toDataURL('image/png');
-      doc.addImage(utilImg, 'PNG', margin, y, cw, 75);
-      y += 80;
-
-      // WORK CALENDAR
-      newPage();
-      section('Work calendar');
-      txt('Weekly occupancy pattern by day. Values show utilisation as percentage of seat capacity.');
-      const cal = getCalendarData(result) || [];
-      const maxW = Math.min(6, cal.length || 0);
-      if(maxW){
-        const h = ['Day'];
-        for(let w=0;w<maxW;w++) h.push('W'+(w+1));
-        const rows = SHORT.map((d,di)=>{
-          const row = [d];
-          for(let w=0;w<maxW;w++){
-            const day = cal[w].days[di];
-            const load = day.load || evald.loads[di] || 0;
-            const util = seats ? Math.round(load/seats*100) : 0;
-            row.push(util+'%');
-          }
-          return row;
+      function table(h, rows, colWs){
+        const widths = colWs || h.map(()=>cw/h.length);
+        ensureHeight(7);
+        doc.setFont('Helvetica','bold'); doc.setFontSize(7); doc.setFillColor(245,248,255); doc.setDrawColor(200,200,200);
+        doc.rect(margin, y-3.6, cw, 5, 'FD');
+        let cx = margin; h.forEach((x,i)=>{ doc.text(String(x), cx+0.7, y); cx += widths[i]; });
+        y += 4.3;
+        doc.setFont('Helvetica','normal'); doc.setFontSize(7);
+        rows.forEach((r,ri)=>{
+          ensureHeight(3.6);
+          if(ri%2===0){ doc.setFillColor(252,253,255); doc.rect(margin,y-2.7,cw,3.6,'F'); }
+          let cx2 = margin; r.forEach((c,ci)=>{ doc.text(String(c), cx2+0.7, y); cx2 += widths[ci]; });
+          y += 3.6;
         });
-        table(h, rows);
       }
 
-      // TEAM ASSIGNMENTS
-      newPage();
-      section('Team assignments');
-      const tRows = state.teams.map((t,idx)=>{
-        const eff = effHCOf(t);
-        const pats = evald.patterns &amp;&amp; evald.patterns[idx] ? evald.patterns[idx].map(d=>SHORT[d]).join(' ') : '—';
-        return [t.name, t.headcount, eff, pats||'—'];
+      // ── HEADER ──
+      doc.setFillColor(255,255,255); doc.rect(0,0,pw,ph,'F');
+      doc.setFillColor(36,115,255); doc.rect(0,0,pw,15,'F');
+      doc.setFont('Helvetica','bold'); doc.setFontSize(12); doc.setTextColor(255,255,255);
+      doc.text('Hybrid Work \u2014 Executive Brief', margin, 9.5);
+      doc.setFont('Helvetica','normal'); doc.setFontSize(8);
+      doc.text(pdfSafe(getScenarioName())+'  \u00b7  '+new Date().toLocaleDateString(), pw-margin, 9.5, {align:'right'});
+      y = 21;
+
+      // ── KPI STRIP ──
+      kpiRow([
+        {l:'Employees', v:String(totalEmp)},
+        {l:'Seats', v:String(seats)},
+        {l:'Peak day', v:SHORT[peakIdx]+' '+peakUtil+'%', warn:peakUtil>90},
+        {l:'Avg utilisation', v:avgUtil+'%'},
+        {l:'Trust Score', v:trust.overall+'/100'}
+      ]);
+
+      // ── TRUST SCORE COMPOSITION (the app's signature metric -- was missing from the PDF entirely) ──
+      section('Trust Score composition \u2014 '+trust.overall+'/100');
+      ensureHeight(20);
+      const dims = [
+        {l:'Seat Fit', v:trust.seatFit, w:W2.seat, col:[36,115,255]},
+        {l:'Synergy Fit', v:trust.synergyFit, w:W2.synergy, col:[14,138,138]},
+        {l:'Attendance Fit', v:trust.attendanceFit, w:W2.attendance, col:[21,128,61]},
+        {l:'Balance Fit', v:trust.balanceFit, w:W2.balance, col:[123,63,228]}
+      ];
+      const dimH = 4.2;
+      dims.forEach(dm=>{
+        doc.setFont('Helvetica','normal'); doc.setFontSize(7.3); doc.setTextColor(60,66,80);
+        doc.text(dm.l+' ('+dm.w+'%)', margin, y+3);
+        const barX = margin+34, barMaxW = cw-34-16;
+        doc.setFillColor(238,241,247); doc.rect(barX, y, barMaxW, dimH, 'F');
+        doc.setFillColor(dm.col[0],dm.col[1],dm.col[2]); doc.rect(barX, y, barMaxW*(dm.v/100), dimH, 'F');
+        doc.setFont('Helvetica','bold'); doc.setFontSize(7.3); doc.setTextColor(20,24,31);
+        doc.text(String(dm.v), barX+barMaxW+2, y+3.2);
+        y += dimH+2.2;
       });
-      table(['Team','HC','Effective','Office days'], tRows.slice(0, 20));
-      if(tRows.length>20){
-        newPage();
-        section('Team assignments (continued)');
-        table(['Team','HC','Effective','Office days'], tRows.slice(20));
-      }
+      y += 2;
 
-      // RECOMMENDATIONS
-      newPage();
+      // ── CHART ──
+      section('Daily occupancy vs. seat capacity');
+      miniChart(62);
+      txt('Bars: green under 70% of seats \u00b7 blue 70\u201390% \u00b7 red over 90%.', 6.8);
+      y += 2;
+
+      // ── SYNERGY SNAPSHOT (one line -- keeps this genuinely tight, not a full rules dump) ──
+      section('Synergy rules');
+      const gd2 = state.globalDefault;
+      const overrideCount = state.mode==='symmetric' ? Object.keys(state.pairRules).length : Object.keys(state.dirRules).length;
+      const gdDesc = gd2.priority==='none' ? 'no requirement' : PRIORITY_LABEL[gd2.priority]+' \u00b7 '+freqLabel(gd2.freq);
+      txt('Global default: '+gdDesc+'.  '+overrideCount+' pair'+(overrideCount===1?'':'s')+' customised away from it.  Realized Stringency '+rs.score+'/100 ('+rs.pctTight+'% of '+rs.rules+' active rule(s) met with zero slack).', 8.3);
+      y += 3;
+
+      // ── TEAM SNAPSHOT (capped to fit one tight page) ──
+      section('Team snapshot');
+      const tRowsAll = state.teams.map((t,idx)=>{
+        const eff = effHCOf(t);
+        const pats = evald.patterns &amp;&amp; evald.patterns[idx] ? evald.patterns[idx].map(d=>SHORT[d]).join(',') : '\u2014';
+        return [pdfSafe(t.name), String(t.headcount), String(eff), pats||'\u2014'];
+      });
+      const roomLeft = (ph-margin) - y - 34; // reserve space for recommendations + footer below
+      const rowCap = Math.max(3, Math.floor(roomLeft/3.6) - 2);
+      table(['Team','HC','Eff.','Office Days'], tRowsAll.slice(0, rowCap), [cw*0.38, cw*0.14, cw*0.14, cw*0.34]);
+      if(tRowsAll.length>rowCap){ txt('+'+(tRowsAll.length-rowCap)+' more team(s) \u2014 see the full Excel or CSV export for the complete list.', 6.8); }
+
+      // ── DATA-DRIVEN RECOMMENDATIONS (not hardcoded -- computed from THIS run) ──
       section('Recommendations');
-      txt('• Use '+SHORT[peakIdx]+' ('+peakUtil+'% peak) for all-hands and cross-team collaboration.');
-      txt('• Reserve '+SHORT[minIdx]+' for deep work and training.');
-      txt('• Monitor utilisation. If consistently >85%, expand seats or stagger teams.');
-      txt('• Re-run the solver quarterly to align with evolving collaboration patterns.');
+      const recs = [];
+      if(peakUtil>=95) recs.push('Seats are essentially maxed on '+SHORT[peakIdx]+' ('+peakUtil+'%) \u2014 consider adding seats or actively staggering the largest teams off that day.');
+      else if(peakUtil>=80) recs.push(SHORT[peakIdx]+' is running hot at '+peakUtil+'% \u2014 fine for now, but re-check before adding headcount.');
+      else recs.push('Peak day ('+SHORT[peakIdx]+', '+peakUtil+'%) has real headroom \u2014 a good day for all-hands or cross-team collaboration.');
+      if(evald.mustMiss>0) recs.push('WARNING \u2014 '+evald.mustMiss+' Must-priority synergy rule(s) were NOT satisfied in this solution. Review the Matrix or List Entry before treating this as final.');
+      else if(rs.pctTight<60 &amp;&amp; rs.rules>0) recs.push('Only '+rs.pctTight+'% of active synergy rules are running with zero slack \u2014 there is room to tighten requirements if closer collaboration is wanted.');
+      else if(rs.rules>0) recs.push(rs.pctTight+'% of active synergy rules are meeting with zero slack \u2014 this schedule is working hard to satisfy what you asked for.');
+      if(avgUtil<40 &amp;&amp; seats>0) recs.push('Average utilisation is '+avgUtil+'% \u2014 the office is lightly used most days; worth revisiting whether '+seats+' seats is more capacity than this org currently needs.');
+      else if(avgUtil>=40 &amp;&amp; seats>0) recs.push('Average utilisation sits at '+avgUtil+'% across the week \u2014 a reasonably balanced use of the '+seats+'-seat capacity.');
+      recs.push('Reserve '+SHORT[minIdx]+' ('+evald.loads[minIdx]+' on-site) for deep-focus work or training \u2014 the quietest day in this plan.');
+      const sibsForPdf = sameScoreSiblingSummary();
+      if(sibsForPdf) recs.push('This score is shared by at least one structurally different alternative \u2014 open the app to compare before finalising.');
+      recs.slice(0,5).forEach(r=>txt('\u2022 '+r, 8.3));
 
-      // FOOTERS
+      // ── FOOTER ──
       const totalPages = doc.internal.pages.length - 1;
       for(let p=1;p<=totalPages;p++){
         doc.setPage(p);
-        doc.setFont('Helvetica','normal');
-        doc.setFontSize(7);
-        doc.setTextColor(150,150,150);
-        doc.text('Hybrid Work Scheduler v2  •  '+new Date().toLocaleDateString()+'  •  Page '+p+' of '+totalPages, pw/2, ph-5, {align:'center'});
+        doc.setFont('Helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(150,150,150);
+        doc.text('Hybrid Work Scheduler v2  \u2022  '+new Date().toLocaleDateString()+'  \u2022  Page '+p+' of '+totalPages, pw/2, ph-5, {align:'center'});
       }
 
-      doc.save('Hybrid-Work-Summary-'+Date.now()+'.pdf');
+      // ── OPTIONAL AI PAGE ──
+      if(aiOn &amp;&amp; aiNarrative){
+        aiNarrative = pdfSafe(aiNarrative);
+        doc.addPage(); y = margin;
+        doc.setFillColor(255,255,255); doc.rect(0,0,pw,ph,'F');
+        doc.setFillColor(123,63,228); doc.rect(0,0,pw,15,'F');
+        doc.setFont('Helvetica','bold'); doc.setFontSize(12); doc.setTextColor(255,255,255);
+        doc.text('AI Analysis \u2014 '+pdfSafe(getScenarioName()), margin, 9.5);
+        y = 22;
+        doc.setTextColor(20,24,31); // reset from the white header text -- never leave body text implicitly white-on-white
+        aiNarrative.split(/\n+/).forEach(block=>{
+          const t2 = block.trim(); if(!t2) return;
+          const isHeading = /^[A-Z][A-Z \/&amp;\-]{3,40}$/.test(t2);
+          if(isHeading){
+            ensureHeight(8);
+            doc.setFont('Helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(123,63,228);
+            doc.text(t2, margin, y); y += 5.5; doc.setTextColor(20,24,31);
+          } else {
+            doc.setFont('Helvetica','normal'); doc.setFontSize(8.5);
+            const lines = doc.splitTextToSize(t2, cw);
+            lines.forEach(l=>{ ensureHeight(3.6); doc.text(l, margin, y); y += 3.6; });
+            y += 2;
+          }
+        });
+        const totalPages2 = doc.internal.pages.length - 1;
+        for(let p=1;p<=totalPages2;p++){
+          doc.setPage(p);
+          doc.setFont('Helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(150,150,150);
+          doc.text('Hybrid Work Scheduler v2  \u2022  '+new Date().toLocaleDateString()+'  \u2022  Page '+p+' of '+totalPages2, pw/2, ph-5, {align:'center'});
+        }
+      }
+
+      doc.save(safeFileName(getScenarioName())+'_'+fileStamp()+'.pdf'); // filename uses browser download encoding, not jsPDF text rendering -- unaffected by WinAnsi limits
     }catch(e){
       alert('PDF error: '+e.message);
       console.error(e);
     }
+    if(btn){ btn.disabled = false; btn.innerHTML = origLabel; }
   };
+
+  // v2.8: one AI call, reusing the same adaptive length system as Explain This Solution,
+  // but capped tighter and asked for plain paragraphs (no markdown) so it drops cleanly
+  // onto one PDF page without needing its own pagination logic.
+  async function generatePDFNarrative(){
+    const s = state.best;
+    const rs = realizedStringency(s);
+    const sibs = sameScoreSiblingSummary();
+    const W = state.trustWeights;
+    const activeRules = resolveRules().resolved.length;
+    const plan = lengthPlan(Math.min(120, state.teams.length*2 + activeRules*3));
+    const raw = await aiCall(
+      'You are a hybrid-work strategy advisor. Write a decision-grade analysis of this schedule as PLAIN PARAGRAPHS for a printed one-page report -- NOT markdown, but you may use short UPPERCASE section headings on their own line (CONTEXT, WHY THIS SHAPE, IMPACT, PROS, CONS, RECOMMENDATION) to organise it, each followed by 2-4 sentences of flowing prose.\n'+
+      'Rules: be specific -- cite the actual numbers, days, and team names below. No bullet characters, no markdown symbols, no bold/italics markup. Keep it tight: '+plan.minWords+'-'+Math.round(plan.minWords*1.3)+' words total, written to fit cleanly on one printed page.\n\n'+
+      'TRUST WEIGHTS: Seat '+W.seat+'%, Synergy '+W.synergy+'%, Attendance '+W.attendance+'%, Balance '+W.balance+'%.\n'+
+      'REALIZED STRINGENCY: '+rs.score+'/100 -- peak seat use '+rs.seatUtil+'%, '+rs.pctTight+'% of '+rs.rules+' rules met with zero slack.\n'+
+      (sibs ? 'SAME-SCORE ALTERNATIVES: '+sibs.join(' ')+'\n' : '')+
+      '\n'+stateContextForAI()+'\n\n'+solutionContextForAI(s, state.selectedGroup||0),
+      Math.min(2200, plan.tokens));
+    return raw.trim();
+  }
 
   // ───────────────────────────────────────────────
   // AI MASTER SWITCH — off means zero AI involvement anywhere
@@ -4573,6 +4983,21 @@ self.onmessage = function(ev){
     if(state.best) renderResults();
   };
 
+  // v2.5: adaptive length planning — scales the requested word count AND the token ceiling
+  // with how much there actually is to explain, and enforces genuine elaboration (a soft
+  // &quot;aim for X words&quot; is easy for a model to undershoot; per-section minimums are not).
+  function lengthPlan(complexity){
+    const c = Math.max(1, complexity);
+    const minWords = Math.round(Math.min(950, 260 + c*3.2));
+    const maxWords = Math.round(minWords * 1.45);
+    const tokens = Math.round(Math.min(4000, maxWords*1.75 + 350));
+    return {minWords, maxWords, tokens};
+  }
+  function lengthInstruction(plan, sectionCount){
+    return 'LENGTH REQUIREMENT — treat this as a hard floor, not a suggestion: write at least '+plan.minWords+' words and no more than '+plan.maxWords+'. '+
+      'Under every one of the '+sectionCount+' headings below, write a minimum of 3 full sentences — never a single line, never a bare list with no prose, and never skip a heading. '+
+      'If a heading genuinely has little to say, write 1-2 sentences explaining why it\'s thin here rather than leaving it empty. Shallow, generic filler does not count toward the word minimum — every sentence must cite an actual number, day, team name, or score from the data below.';
+  }
   async function aiCall(prompt, maxTokens){
     const {provider, key, model} = state.ai;
     if(!key || !model) throw new Error(&quot;AI is not configured. Open the AI Assistant panel and connect a key.&quot;);
@@ -4798,11 +5223,12 @@ self.onmessage = function(ev){
       if(ia===undefined || ib===undefined || ia===ib) return;
       const pri = [&quot;must&quot;,&quot;should&quot;,&quot;good&quot;].includes(s.priority) ? s.priority : &quot;good&quot;;
       const fr = [0.25,0.5,1,2,3,4,5].includes(+s.freq) ? +s.freq : 0.25;
-      state.pairRules[pairKey(Math.min(ia,ib),Math.max(ia,ib))] = {priority:pri, freq:fr};
+      setPairRule(Math.min(ia,ib), Math.max(ia,ib), {priority:pri, freq:fr});
       applied++;
     });
     setMode(&quot;symmetric&quot;);
     setSource(&quot;AI Generated&quot;);
+    state.synergyReviewed = false;
     syncGdInputs();
     renderTeams(); renderCounters(); renderCompactPreview(); updateMeters(); markDirty();
     $(&quot;aiPreviewArea&quot;).style.display = &quot;none&quot;;
@@ -4836,13 +5262,17 @@ self.onmessage = function(ev){
       const rs = realizedStringency(s);
       const sibs = sameScoreSiblingSummary();
       const W = state.trustWeights;
+      const activeRules = resolveRules().resolved.length;
+      const sections = 8; // CONTEXT..BOTTOM LINE
+      const plan = lengthPlan(state.teams.length*3 + activeRules*4 + (sibs?12:0));
       const out = await aiCall(
         'You are a hybrid-work strategy advisor briefing a workplace leader who must make a real decision from this schedule. Write a thorough, decision-grade analysis in plain text using these UPPERCASE section headings, each on its own line: CONTEXT, WHAT THIS SCHEDULE DOES, WHY THE SOLVER CHOSE THIS SHAPE, IMPACT (cover leadership/space planning, team leads, and employees separately), PROS, CONS, WATCH-OUTS, BOTTOM LINE.\n'+
-        'Rules: be specific — always cite the actual numbers, day names, and team names from the data below rather than generalities. Explain cause and effect (e.g. WHY a peak lands on that day, WHAT a sub-score would look like if a rule were relaxed). In PROS and CONS give 3-5 concrete items each. No markdown symbols, no bullets characters other than a leading dash. Aim for roughly 400-550 words — thorough but never repetitive.\n\n'+
+        lengthInstruction(plan, sections)+'\n'+
+        'Rules: be specific — always cite the actual numbers, day names, and team names from the data below rather than generalities. Explain cause and effect (e.g. WHY a peak lands on that day, WHAT a sub-score would look like if a rule were relaxed). In PROS and CONS give 3-5 concrete items each, one full sentence per item, not just a phrase. No markdown symbols, no bullet characters other than a leading dash.\n\n'+
         'TRUST WEIGHTS IN USE: Seat '+W.seat+'%, Synergy '+W.synergy+'%, Attendance '+W.attendance+'%, Balance '+W.balance+'% (user-adjustable).\n'+
         'REALIZED STRINGENCY (measured post-run): '+rs.score+'/100 — peak seat use '+rs.seatUtil+'%, '+rs.pctTight+'% of '+rs.rules+' active rules met with zero slack.\n'+
         (sibs ? 'SAME-SCORE ALTERNATIVES EXIST — explicitly address this in your analysis: '+sibs.join(&quot; &quot;)+'\n' : '')+
-        '\n'+stateContextForAI()+&quot;\n\n&quot;+solutionContextForAI(s, state.selectedGroup||0), 2200);
+        '\n'+stateContextForAI()+&quot;\n\n&quot;+solutionContextForAI(s, state.selectedGroup||0), plan.tokens);
       openAIModal(&quot;&amp;#10024; &quot;+optLabel+&quot; Explained&quot;, out.trim());
     }catch(err){ openAIModal(&quot;&amp;#10024; Explain Solution&quot;, &quot;AI explanation failed: &quot;+err.message); }
   };
@@ -4858,13 +5288,16 @@ self.onmessage = function(ev){
       const scoreCounts = {};
       reps.forEach(r=>{ scoreCounts[r.trust.overall]=(scoreCounts[r.trust.overall]||0)+1; });
       const ties = Object.keys(scoreCounts).filter(k=>scoreCounts[k]>1);
+      const sections = 3 + (ties.length?1:0);
+      const plan = lengthPlan(reps.length*22 + state.teams.length*3 + (ties.length?20:0));
       const out = await aiCall(
         'You are a hybrid-work strategy advisor. Compare ALL of these schedule options holistically for a leadership decision. Write in plain text with these UPPERCASE section headings, each on its own line: THE OPTIONS AT A GLANCE (2-3 sentences per option: its character, who it favours, its weakest point), TRADE-OFFS (walk through the meaningful pairwise trade-offs — what you gain and lose moving between options, citing actual numbers and days), '+
         (ties.length ? 'SAME-SCORE, DIFFERENT SHAPE (options tied at '+ties.join(&quot; and &quot;)+'/100 are structurally different schedules — explain concretely what differs between them and why a leader might still strongly prefer one over the other), ' : '')+
         'WINNER BY LENS (name the best option if space/cost efficiency matters most; if team cohesion matters most; if employee flexibility matters most — one short justification each), OVERALL WINNER (declare ONE option and defend the choice against the runner-up in 3-4 sentences).\n'+
-        'Rules: cite actual team names, days, loads and sub-scores from the data. No markdown symbols. Roughly 450-650 words total.\n'+
+        lengthInstruction(plan, sections)+' For THE OPTIONS AT A GLANCE, that minimum applies per option, not to the section as a whole.\n'+
+        'Rules: cite actual team names, days, loads and sub-scores from the data. No markdown symbols.\n'+
         'TRUST WEIGHTS IN USE: Seat '+W.seat+'%, Synergy '+W.synergy+'%, Attendance '+W.attendance+'%, Balance '+W.balance+'%.\n\n'+
-        stateContextForAI()+&quot;\n\n&quot;+ctx, 2600);
+        stateContextForAI()+&quot;\n\n&quot;+ctx, plan.tokens);
       openAIModal(&quot;&amp;#10024; Solution Comparison&quot;, out.trim());
     }catch(err){ openAIModal(&quot;&amp;#10024; Solution Comparison&quot;, &quot;AI comparison failed: &quot;+err.message); }
   };
@@ -4906,19 +5339,27 @@ self.onmessage = function(ev){
       slack: &quot;a Slack/Teams post — skimmable, friendly, light formatting with plain dashes&quot;
     }[format];
     const toneTxt = {warm:&quot;warm and supportive&quot;, formal:&quot;formal and precise&quot;, direct:&quot;direct and concise&quot;}[tone];
-    const lengthTxt = {short:&quot;roughly 150-250 words&quot;, standard:&quot;roughly 300-450 words&quot;, detailed:&quot;roughly 500-700 words&quot;}[length];
+    // v2.5: the length dropdown sets a base target, but more topics ticked needs more room —
+    // scaling only the base (not overriding it) keeps &quot;Short&quot; meaningfully shorter than &quot;Detailed&quot;
+    // while still giving every selected topic enough space to be substantive, not squeezed.
+    const lengthBase = {short:220, standard:420, detailed:650}[length];
+    const topicBonus = Math.max(0, topics.length-2)*90;
+    const minWords = lengthBase + topicBonus;
+    const maxWords = Math.round(minWords*1.4);
+    const tokens = Math.round(Math.min(4000, maxWords*1.75+350));
+    const lengthTxt = &quot;at least &quot;+minWords+&quot; words (no more than &quot;+maxWords+&quot;) — treat this as a hard floor, not a suggestion&quot;;
     const rs = realizedStringency(s);
     openAIModalLoading(&quot;&amp;#10024; Drafting for &quot;+({leadership:&quot;Leadership&quot;,all:&quot;All Staff&quot;,team:(state.teams[teamIdx]||{}).name||&quot;Team&quot;,hr:&quot;HR &amp; Ops&quot;})[audience]+&quot;…&quot;);
     try{
       const out = await aiCall(
         'Draft '+formatTxt+' addressed to '+audienceTxt+'. Tone: '+toneTxt+'. Length: '+lengthTxt+'.\n'+
-        'Cover these topics, in a sensible order, each substantively: '+topics.join(&quot;; &quot;)+'.\n'+
+        'Cover these topics, in a sensible order, EACH with a minimum of 3 full sentences of substantive content — never a single line per topic, never skip one: '+topics.join(&quot;; &quot;)+'.\n'+
         (audience===&quot;team&quot; ? 'Focus ONLY on this team\'s own office days, who they overlap with on those days, and why those days were chosen for them. Do not list other teams\' full schedules.\n' : '')+
         (custom ? 'Additional instructions from the author: '+custom+'\n' : '')+
-        'Ground every claim in the actual schedule data below — name real days, real teams, real numbers. Policy start date: '+state.calStart+'. Plain text only, no markdown symbols. Do not invent facts not present in the data.\n\n'+
+        'Ground every claim in the actual schedule data below — name real days, real teams, real numbers; every sentence should earn its place with a specific fact, not generic filler. Policy start date: '+state.calStart+'. Plain text only, no markdown symbols. Do not invent facts not present in the data.\n\n'+
         'SCENARIO: '+getScenarioName()+'\n'+
         'Peak seat use '+rs.seatUtil+'% · '+rs.pctTight+'% of synergy rules met with zero slack.\n\n'+
-        stateContextForAI()+&quot;\n\n&quot;+solutionContextForAI(s, state.selectedGroup||0), 2500);
+        stateContextForAI()+&quot;\n\n&quot;+solutionContextForAI(s, state.selectedGroup||0), tokens);
       openAIModal(&quot;&amp;#10024; Draft — &quot;+({memo:&quot;Policy Memo&quot;,email:&quot;Email&quot;,brief:&quot;Executive Brief&quot;,slack:&quot;Slack Post&quot;})[format], out.trim());
     }catch(err){ openAIModal(&quot;&amp;#10024; Draft Communication&quot;, &quot;AI drafting failed: &quot;+err.message); }
   };
@@ -4966,8 +5407,10 @@ self.onmessage = function(ev){
     openAIModalLoading(&quot;&amp;#10024; What differs between these &quot;+g.variations.length+&quot; variations?&quot;);
     try{
       const ctx = g.variations.map((v,i)=>solutionContextForAI(v, i)).join(&quot;\n\n&quot;);
+      const plan = lengthPlan(g.variations.length*18 + state.teams.length*2);
       const out = await aiCall(
-        'These schedules all score '+g.rep.trust.overall+'/100 and are near-identical — they differ by only a few day-swaps. Write plain text with these UPPERCASE headings on their own lines: DIFFERENCES (list every concrete difference: which team moved from which day to which day, and the daily-load shift each move causes — cite numbers), PRACTICAL EDGE (does any variation have a subtle real-world advantage — avoiding a heavy Friday, flattening the peak day, keeping a specific pair together longer?), PICK (name one variation and justify in 2-3 sentences). Roughly 200-350 words.\n\n'+ctx, 1400);
+        'These schedules all score '+g.rep.trust.overall+'/100 and are near-identical — they differ by only a few day-swaps. Write plain text with these UPPERCASE headings on their own lines: DIFFERENCES (list every concrete difference: which team moved from which day to which day, and the daily-load shift each move causes — cite numbers), PRACTICAL EDGE (does any variation have a subtle real-world advantage — avoiding a heavy Friday, flattening the peak day, keeping a specific pair together longer?), PICK (name one variation and justify in 2-3 sentences).\n'+
+        lengthInstruction(plan, 3)+'\n\n'+ctx, plan.tokens);
       openAIModal(&quot;&amp;#10024; Variation Comparison — &quot;+g.rep.trust.overall+&quot;/100 × &quot;+g.variations.length, out.trim());
     }catch(err){ openAIModal(&quot;&amp;#10024; Variation Comparison&quot;, &quot;AI comparison failed: &quot;+err.message); }
   };
