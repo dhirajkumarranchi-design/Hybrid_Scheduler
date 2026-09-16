@@ -611,7 +611,7 @@ code{
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><path d="M3 14h7v7H3z" rx="1"/><path d="M17 14v3M17 20v1M14 17h3M20 17h1"/></svg>
     </div>
     <span class="nav-wordmark">HYBRID·SCHEDULER</span>
-    <span class="nav-version">v2.9</span>
+    <span class="nav-version">v2.11</span>
   </a>
   <div class="nav-tabs">
     <button class="nav-tab active" data-tab="doc" onclick="switchTab('doc')">DOCUMENTATION</button>
@@ -926,6 +926,11 @@ code{
 
         <p>The gaps between these numbers are the point, not an accident. Overflow, a broken Must, and a broken Must-tier minimum all sit at 450–520 — to the solver, they're the same species of failure: <em>non-negotiable</em>. Every Should violation, whichever flavor, costs 90; every Good violation costs 40. Six Should misses would have to gang up before they'd outweigh one Must violation — that margin is what keeps "Must" meaning <em>must</em>, even while thousands of candidates are being compared per second. <strong>excessDays</strong> plays a narrower role: it's the tax on office days nobody actually asked for.</p>
 
+        <div class="callout success">
+          <div class="callout-title">EXCESSDAYS NOW RECOGNISES A "MUST HUB" — FIXED IN v2.11</div>
+          <p>A team juggling several simultaneous Must relationships — say, one team that five other teams each independently need to overlap weekly — can genuinely need more office days than any single relationship implies, if those five partners don't naturally land on the same days. The old excessDays check didn't know that: it only looked at a team's single heaviest Must relationship, so it taxed that hub team's necessary extra days as if they were pointless padding. It's fixed now — for every candidate the solver actually evaluates, it checks which days are genuinely defending a live Must overlap in that specific schedule, and only charges the excess penalty on days that aren't. A team's real workload from being everyone's Must partner no longer looks like waste.</p>
+        </div>
+
         <div class="callout">
           <div class="callout-title">FEASIBILITY FLAG</div>
           <p>Feasible requires overflow = 0, mustMiss = 0, and minDayMiss<em>Must</em> = 0 — nothing else. A missed Should, attendance or synergy, never disqualifies a solution; it just costs points. Miss the cliff and you lose the entire 100,000-point bonus in one stroke, which is why the solver will always take a feasible plan over a beautifully-optimized infeasible one.</p>
@@ -1046,7 +1051,7 @@ code{
         </div>
 
         <h3>Four ways to enter synergy data</h3>
-        <p><strong>In-app matrix</strong> — click through team pairs directly, with live tooltips explaining each priority level and a running constraint-density indicator. Headers show each team as <code>A-Engineering</code>, <code>B-Product</code>, and so on, so the letter code and the name are never ambiguous. <br>
+        <p><strong>In-app matrix</strong> — click through team pairs directly, with live tooltips explaining each priority level and a running constraint-density indicator. Headers show each team as <code>A-Engineering</code>, <code>B-Product</code>, and so on, so the letter code and the name are never ambiguous. With many teams the grid scrolls horizontally rather than squeezing columns unreadably thin — the first column stays pinned in place as you scroll, so you always know which team's row you're looking at.<br>
         <strong>In-app List Entry</strong> — a dedicated <strong>"List Entry"</strong> button sits right next to "Open Matrix," opening a fully separate modal that never touches the matrix grid at all — plain dropdown rows (Team A / Team B / Frequency / Priority / Remove), with an "+ Add override" control at the bottom, only ever showing pairs you've actually customised. A "Switch to Matrix" button is there if you want the grid instead, but nothing requires it. The same view is also available as a tab inside the Matrix modal itself, for when you're already looking at the grid and want to flip to the list without leaving. Both are exactly the same data — edit a value in either one and the other reflects it instantly, they're two windows onto one underlying list, not two copies of it.<br>
         <strong>Excel — linear rows</strong> — one row per team pair (Team A, Team B, Direction, Frequency, Priority). Works for any number of teams, and the only format that supports Directional mode. <br>
         <strong>Excel — matrix codes</strong> — a 20×20 grid mirroring the in-app matrix, filled with short codes like <code>M1W</code> (Must, 1×/week) or <code>S2M</code> (Should, 2×/month). Symmetric mode only. The sheet carries <strong>live conditional formatting</strong>: as you type a code, the cell colors itself by criticality — M turns red, S amber, G green — even in a blank template.</p>
@@ -1171,12 +1176,12 @@ code{
             </tr>
             <tr>
               <td>Explain This Solution</td>
-              <td>A structured, decision-grade analysis (Context → What it does → Why the solver chose this shape → Impact per stakeholder → Pros → Cons → Watch-outs → Bottom line), grounded in the actual numbers — including the measured Realized Stringency and any same-score alternatives.</td>
+              <td>A structured, decision-grade analysis (Context → What it does → Why the solver chose this shape → Impact per stakeholder → Pros → Cons → Watch-outs → Bottom line), grounded in the actual numbers — including the measured Realized Stringency, any same-score alternatives, and — since v2.11 — a named diagnosis when one team is a "Must hub" carrying noticeably more simultaneous Must relationships than the rest, which is very often the real reason it lands on more office days than its own stated minimum.</td>
               <td>On demand, per solution</td>
             </tr>
             <tr>
               <td>Compare Solutions</td>
-              <td>A holistic comparison of all distinct options: per-option profiles, explicit pairwise trade-offs with real numbers, a "winner by lens" (space efficiency / cohesion / flexibility), and one declared overall winner defended against the runner-up. When options tie on score but differ structurally, the comparison addresses that head-on. A separate, lighter comparison covers near-identical variations within one group.</td>
+              <td>A holistic comparison of all distinct options: per-option profiles, explicit pairwise trade-offs with real numbers, a "winner by lens" (space efficiency / cohesion / flexibility), and one declared overall winner defended against the runner-up. When options tie on score but differ structurally, the comparison addresses that head-on. If a Must-hub team is shaping every option similarly, that's named once as shared context rather than treated as a flaw of any single option. A separate, lighter comparison covers near-identical variations within one group.</td>
               <td>On demand</td>
             </tr>
             <tr>
@@ -1188,8 +1193,13 @@ code{
         </table>
 
         <div class="callout success">
-          <div class="callout-title">RESPONSE LENGTH IS ADAPTIVE — NEW IN v2.5</div>
-          <p>Earlier versions asked the model to "aim for roughly 400 words," which is a soft target models routinely undershoot — the actual ceiling was generous, but nothing made the model use it, so responses could come back thin. Every AI writing feature now computes a length plan from the real complexity of what it's explaining (team count, active synergy rules, number of solutions being compared, whether same-score ties exist) and enforces it as a floor, not a suggestion — a minimum of 3 full sentences under every heading, no heading skipped or left as a single line. A tiny 3-team scenario gets a tight ~300-word explanation; a large, tied, 25-team scenario gets the full ~950-word treatment. Draft Communications scales the same way against the number of topics you tick, so a "Short" memo covering five topics still gets enough room to actually cover all five.</p>
+          <div class="callout-title">RESPONSE LENGTH IS A GUIDE, NOT A GATE — UPDATED IN v2.11</div>
+          <p>An earlier version enforced length quite rigidly — a computed word count treated as a hard floor, with "never a single line" rules under every heading. That produced consistent depth, but it could also push the model toward padding when a scenario genuinely didn't call for much. It's softer now: the same adaptive calculation (team count, active rules, number of solutions being compared) still sets a sensible reference range and a token budget, but the model is told plainly to let the actual content decide — shorter when there's little to say, longer when there's real nuance, no padding either way. The token ceiling itself was also raised to give real headroom rather than a tight wall.</p>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-title">EVERY AI OUTPUT CARRIES A CAUTION NOTE</div>
+          <p>Any modal showing a genuine AI response — Explain, Compare, Draft Communications — now carries a persistent line: <em>"AI-generated — it can be confidently wrong, miss context, or misstate a number. Treat this as a first draft and double-check anything you're about to act on."</em> It doesn't appear on the (i) info-button explanations elsewhere in the app, since those are static, human-written text, not AI output — the note is reserved for content that actually came from a model.</p>
         </div>
 
         <h3>The AI Data Entry loop, in detail</h3>
@@ -1331,14 +1341,19 @@ code{
             <tr>
               <td>PDF — Executive Brief</td>
               <td>A one-page leadership handoff — the thing you actually print or attach to an email, not a data dump.</td>
-              <td>KPI strip, Trust Score composition, a real vector utilization chart, a one-line synergy summary, a team snapshot, and 3-5 recommendations computed from this specific run — not template text. A second page with a full AI-written analysis is appended automatically when AI Assistance is connected.</td>
+              <td>KPI strip, Trust Score composition, a real vector utilization chart, a one-line synergy summary, a team snapshot, and 3-5 recommendations computed from this specific run — not template text. A second page comparing <strong>every distinct solution the solver found</strong> is appended automatically when AI Assistance is connected.</td>
             </tr>
           </tbody>
         </table>
 
         <div class="callout success">
           <div class="callout-title">REBUILT IN v2.8 — FROM A SCREENSHOT TO A REAL DOCUMENT</div>
-          <p>The original PDF export was a full-page screenshot of whichever results tab happened to be open, stretched into an A4 page — blurry chart, browser-only styling that didn't belong in a printed document, no real structure. It's now purpose-built: everything on the page is drawn directly as vector text and shapes, so it stays sharp at any zoom, and the content is a genuine <em>executive brief</em> rather than a dump of every tab. It fits deliberately in <strong>one page</strong> when AI Assistance is off. When it's on, exporting also fires a single fresh AI call and appends a second page with a full written analysis — the same one-call, no-pagination-guesswork approach used everywhere else the tool talks to a model. The recommendations on page one are never static text: they're computed from this run's actual peak day, average utilization, Must-rule misses, and Realized Stringency, so a quiet, well-balanced week and a maxed-out one get genuinely different advice.</p>
+          <p>The original PDF export was a full-page screenshot of whichever results tab happened to be open, stretched into an A4 page — blurry chart, browser-only styling that didn't belong in a printed document, no real structure. It's now purpose-built: everything on the page is drawn directly as vector text and shapes, so it stays sharp at any zoom, and the content is a genuine <em>executive brief</em> rather than a dump of every tab. It fits deliberately in <strong>one page</strong> when AI Assistance is off. When it's on, exporting also fires a single fresh AI call and appends a second page — the same one-call, no-pagination-guesswork approach used everywhere else the tool talks to a model. The recommendations on page one are never static text: they're computed from this run's actual peak day, average utilization, Must-rule misses, and Realized Stringency, so a quiet, well-balanced week and a maxed-out one get genuinely different advice.</p>
+        </div>
+
+        <div class="callout">
+          <div class="callout-title">THE AI PAGE COVERS ALL OPTIONS — UPDATED IN v2.11</div>
+          <p>It used to write about whichever single solution you had selected when you clicked export. It now compares <strong>every structurally distinct solution the solver found</strong> — the same options, character, and trade-offs the in-app Compare Solutions feature covers — so the AI page is a genuine leadership comparison document, not a narrative about one arbitrary pick. If the solver only found one distinct solution, it falls back to a single-solution explanation instead of comparing an option against nothing.</p>
         </div>
 
         <h3>The Excel round-trip — rebuilt in v2</h3>
@@ -1524,7 +1539,7 @@ input:focus,select:focus,textarea:focus{border-color:#9cc0ff;box-shadow:0 0 0 4p
 .grid2,.grid3,.grid4{display:grid;gap:12px}
 .grid2{grid-template-columns:1fr 1fr}
 .grid3{grid-template-columns:1fr 1fr 1fr}
-.grid4{grid-template-columns:1fr 1fr 1fr 1fr}
+.grid4{grid-template-columns:0.8fr 0.8fr 1.55fr 0.8fr}
 @media(max-width:760px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
 .btn{border:1px solid var(--line);background:#fff;color:var(--text);padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 .btn.primary{background:linear-gradient(135deg,var(--blue),#5a9bff);color:#fff;border-color:transparent}
@@ -1573,8 +1588,9 @@ canvas{width:100%;height:280px;display:block}
 .modal-body{padding:16px}
 .matrix-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}
 table.matrix{width:100%;min-width:900px;border-collapse:separate;border-spacing:0}
-.matrix th,.matrix td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;text-align:center}
-.matrix th:first-child,.matrix td:first-child{position:sticky;left:0;background:#fff;z-index:1}
+.matrix{border-collapse:collapse}
+.matrix th,.matrix td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;text-align:center;min-width:136px}
+.matrix th:first-child,.matrix td:first-child{position:sticky;left:0;background:#fff;z-index:1;min-width:120px}
 .matrix thead th{position:sticky;top:0;background:#f8fbff;z-index:2}
 .cellbox{display:grid;gap:6px}
 .cellbox select{padding:8px;border-radius:10px;font-size:12px}
@@ -2013,6 +2029,7 @@ details.panel .panel-body{padding:0 12px 12px}
     </div>
     <div class=&quot;modal-body&quot;>
       <div class=&quot;ai-out&quot; id=&quot;aiModalBody&quot;>…</div>
+      <div class=&quot;note&quot; id=&quot;aiCautionNote&quot; style=&quot;display:none;margin-top:10px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;color:#92400e&quot;>&amp;#9888;&amp;#65039; AI-generated — it can be confidently wrong, miss context, or misstate a number. Treat this as a first draft and double-check anything you're about to act on.</div>
     </div>
   </div>
 </div>
@@ -2482,11 +2499,12 @@ details.panel .panel-body{padding:0 12px 12px}
         '<div class=&quot;grid4&quot;>'+
         '<div><label>Headcount</label><input type=&quot;number&quot; min=&quot;1&quot; value=&quot;'+t.headcount+'&quot; data-idx=&quot;'+idx+'&quot; data-field=&quot;headcount&quot;></div>'+
         '<div><label>Exempt %</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot; value=&quot;'+t.exempt+'&quot; data-idx=&quot;'+idx+'&quot; data-field=&quot;exempt&quot;></div>'+
-        '<div><label>Minimum Days Needed</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;5&quot; value=&quot;'+t.minDays+'&quot; data-idx=&quot;'+idx+'&quot; data-field=&quot;minDays&quot; style=&quot;margin-bottom:4px&quot;>'+
-          '<select data-idx=&quot;'+idx+'&quot; data-field=&quot;minDaysPriority&quot; title=&quot;Must = guaranteed, never traded off. Should = a strong target the solver can miss if something else scores better.&quot;>'+
-          '<option value=&quot;should&quot;'+((t.minDaysPriority||&quot;should&quot;)===&quot;should&quot;?' selected':'')+'>Should (soft target)</option>'+
-          '<option value=&quot;must&quot;'+(t.minDaysPriority===&quot;must&quot;?' selected':'')+'>Must (guaranteed)</option>'+
-          '</select></div>'+
+        '<div><label>Minimum Days Needed</label><div style=&quot;display:flex;gap:6px&quot;>'+
+          '<input type=&quot;number&quot; min=&quot;0&quot; max=&quot;5&quot; value=&quot;'+t.minDays+'&quot; data-idx=&quot;'+idx+'&quot; data-field=&quot;minDays&quot; style=&quot;flex:0 0 56px;min-width:0&quot;>'+
+          '<select data-idx=&quot;'+idx+'&quot; data-field=&quot;minDaysPriority&quot; title=&quot;Must = guaranteed, never traded off. Should = a strong target the solver can miss if something else scores better.&quot; style=&quot;flex:1;min-width:0&quot;>'+
+          '<option value=&quot;should&quot;'+((t.minDaysPriority||&quot;should&quot;)===&quot;should&quot;?' selected':'')+'>Should</option>'+
+          '<option value=&quot;must&quot;'+(t.minDaysPriority===&quot;must&quot;?' selected':'')+'>Must</option>'+
+          '</select></div></div>'+
         '<div><label>Effective HC</label><input value=&quot;'+eff+'&quot; disabled></div>'+
         '</div>'+
         '<div class=&quot;tagline&quot;><span class=&quot;pill blue&quot;>Default exempt: 5%</span><span class=&quot;pill&quot;>Minimum days can stay 0 if fully flexible</span><span class=&quot;pill '+((t.minDaysPriority||&quot;should&quot;)===&quot;must&quot;?&quot;must&quot;:&quot;should&quot;)+'&quot;>'+((t.minDaysPriority||&quot;should&quot;)===&quot;must&quot;?&quot;Must \u2014 this floor can never be missed&quot;:&quot;Should \u2014 solver can trade this away if it scores better&quot;)+'</span></div>';
@@ -2946,6 +2964,17 @@ details.panel .panel-body{padding:0 12px 12px}
     const patterns=masks.map(teamDays), loads=[0,0,0,0,0];
     let overflow=0, mustMiss=0, shouldMiss=0, goodMiss=0, minDayMissMust=0, minDayMissShould=0, excessDays=0;
     const minDayIssues=[];
+    // v2.11: figure out, for THIS specific candidate, which of a team's days are actually
+    // defending a live Must relationship — not a pre-solve guess, a measurement of what's
+    // really overlapping right now. A team juggling several simultaneous Must partners (a
+    // &quot;Must hub&quot;) can genuinely need more days than any single relationship implies; this
+    // stops the excess-day penalty from charging for days that are structurally load-bearing.
+    const mustProtectedDays = state.teams.map(()=>new Set());
+    resolvedRules.forEach(rule=>{
+      if(rule.priority!==&quot;must&quot;) return;
+      const a=patterns[rule.i], b=patterns[rule.j];
+      a.forEach(d=>{ if(b.includes(d)){ mustProtectedDays[rule.i].add(d); mustProtectedDays[rule.j].add(d); } });
+    });
     state.teams.forEach((t,idx)=>{
       const eff=Math.round((+t.headcount||0)*(1-(+t.exempt||0)/100));
       patterns[idx].forEach(d=>{ loads[d]+=eff; });
@@ -2955,8 +2984,11 @@ details.panel .panel-body{padding:0 12px 12px}
         if(mdPriority===&quot;must&quot;) minDayMissMust+=miss; else minDayMissShould+=miss;
         minDayIssues.push(t.name+' needs at least '+t.minDays+' day(s) ('+(mdPriority===&quot;must&quot;?&quot;Must&quot;:&quot;Should&quot;)+'), but got '+patterns[idx].length+'.');
       }
-      // ITEM 6 FIX 2: penalise days beyond what Must rules + minimums actually require
-      excessDays += Math.max(0, patterns[idx].length - (needDays ? needDays[idx] : (+t.minDays||0)));
+      // ITEM 6 FIX 2 / v2.11: penalise days beyond what Must rules + minimums + LIVE Must
+      // overlaps actually require, using whichever floor is highest for this exact candidate.
+      const staticFloor = needDays ? needDays[idx] : (+t.minDays||0);
+      const dynamicFloor = Math.max(staticFloor, mustProtectedDays[idx].size);
+      excessDays += Math.max(0, patterns[idx].length - dynamicFloor);
     });
     const minDayMiss = minDayMissMust + minDayMissShould; // total, for reporting + Attendance Fit
     loads.forEach(x=>overflow+=Math.max(0,x-seats));
@@ -3056,6 +3088,12 @@ self.onmessage = function(ev){
     const patterns=masks.map(teamDays), loads=[0,0,0,0,0];
     let overflow=0, mustMiss=0, shouldMiss=0, goodMiss=0, minDayMissMust=0, minDayMissShould=0, excessDays=0;
     const minDayIssues=[];
+    const mustProtectedDays = teams.map(()=>new Set());
+    resolvedRules.forEach(rule=>{
+      if(rule.priority!==&quot;must&quot;) return;
+      const a=patterns[rule.i], b=patterns[rule.j];
+      a.forEach(d=>{ if(b.includes(d)){ mustProtectedDays[rule.i].add(d); mustProtectedDays[rule.j].add(d); } });
+    });
     teams.forEach((t,idx)=>{
       const eff=Math.round((+t.headcount||0)*(1-(+t.exempt||0)/100));
       patterns[idx].forEach(d=>{ loads[d]+=eff; });
@@ -3065,7 +3103,8 @@ self.onmessage = function(ev){
         if(mdPriority===&quot;must&quot;) minDayMissMust+=miss; else minDayMissShould+=miss;
         minDayIssues.push(t.name+&quot; min days (&quot;+(mdPriority===&quot;must&quot;?&quot;Must&quot;:&quot;Should&quot;)+&quot;)&quot;);
       }
-      excessDays += Math.max(0, patterns[idx].length - needDays[idx]);
+      const dynamicFloor = Math.max(needDays[idx], mustProtectedDays[idx].size);
+      excessDays += Math.max(0, patterns[idx].length - dynamicFloor);
     });
     const minDayMiss = minDayMissMust + minDayMissShould;
     loads.forEach(x=>overflow+=Math.max(0,x-seats));
@@ -3852,6 +3891,7 @@ self.onmessage = function(ev){
     const info = INFO_TEXTS[key]; if(!info) return;
     $(&quot;aiModalTitle&quot;).innerHTML = info.title;
     $(&quot;aiModalBody&quot;).innerHTML = info.body;
+    $(&quot;aiCautionNote&quot;).style.display = &quot;none&quot;;
     $(&quot;aiModal&quot;).style.display = &quot;block&quot;;
   }
   document.addEventListener(&quot;click&quot;, e=>{
@@ -4760,11 +4800,11 @@ self.onmessage = function(ev){
     const btn = $('exportSummaryBtn');
     const origLabel = btn ? btn.innerHTML : '';
     const aiOn = !!(state.aiEnabled &amp;&amp; state.ai.key &amp;&amp; state.ai.model);
-    let aiNarrative = null;
+    let aiResult = null;
     if(aiOn){
       if(btn){ btn.disabled = true; btn.innerHTML = '<span class=&quot;spinner&quot;></span> Generating AI page\u2026'; }
-      try{ aiNarrative = await generatePDFNarrative(); }
-      catch(e){ aiNarrative = null; console.error('AI narrative for PDF failed:', e); }
+      try{ aiResult = await generatePDFNarrative(); }
+      catch(e){ aiResult = null; console.error('AI narrative for PDF failed:', e); }
     }
     try{
       const { jsPDF } = window.jspdf;
@@ -4953,13 +4993,13 @@ self.onmessage = function(ev){
       }
 
       // ── OPTIONAL AI PAGE ──
-      if(aiOn &amp;&amp; aiNarrative){
-        aiNarrative = pdfSafe(aiNarrative);
+      if(aiOn &amp;&amp; aiResult &amp;&amp; aiResult.text){
+        const aiNarrative = pdfSafe(aiResult.text);
         doc.addPage(); y = margin;
         doc.setFillColor(255,255,255); doc.rect(0,0,pw,ph,'F');
         doc.setFillColor(123,63,228); doc.rect(0,0,pw,15,'F');
         doc.setFont('Helvetica','bold'); doc.setFontSize(12); doc.setTextColor(255,255,255);
-        doc.text('AI Analysis \u2014 '+pdfSafe(getScenarioName()), margin, 9.5);
+        doc.text((aiResult.isComparison ? 'AI Comparison \u2014 All Options \u2014 ' : 'AI Analysis \u2014 ')+pdfSafe(getScenarioName()), margin, 9.5);
         y = 22;
         doc.setTextColor(20,24,31); // reset from the white header text -- never leave body text implicitly white-on-white
         aiNarrative.split(/\n+/).forEach(block=>{
@@ -4996,21 +5036,44 @@ self.onmessage = function(ev){
   // but capped tighter and asked for plain paragraphs (no markdown) so it drops cleanly
   // onto one PDF page without needing its own pagination logic.
   async function generatePDFNarrative(){
-    const s = state.best;
-    const rs = realizedStringency(s);
-    const sibs = sameScoreSiblingSummary();
+    const groups = state.groups || [];
+    const reps = groups.map(g=>g.rep);
     const W = state.trustWeights;
     const activeRules = resolveRules().resolved.length;
-    const plan = lengthPlan(Math.min(120, state.teams.length*2 + activeRules*3));
+
+    // Only one distinct solution exists -- a &quot;comparison&quot; would be comparing it to nothing.
+    // Fall back to the same single-solution explain style as before.
+    if(reps.length<=1){
+      const s = state.best;
+      const rs = realizedStringency(s);
+      const plan = lengthPlan(Math.min(120, state.teams.length*2 + activeRules*3));
+      const raw = await aiCall(
+        'You are a hybrid-work strategy advisor. Write a decision-grade analysis of this schedule as PLAIN PARAGRAPHS for a printed report -- NOT markdown, but you may use short UPPERCASE section headings on their own line (CONTEXT, WHY THIS SHAPE, IMPACT, PROS, CONS, RECOMMENDATION) to organise it, each followed by flowing prose.\n'+
+        lengthInstruction(plan, 6)+'\n'+
+        'Rules: be specific -- cite the actual numbers, days, and team names below. No bullet characters, no markdown symbols, no bold/italics markup.\n\n'+
+        'TRUST WEIGHTS: Seat '+W.seat+'%, Synergy '+W.synergy+'%, Attendance '+W.attendance+'%, Balance '+W.balance+'%.\n'+
+        'REALIZED STRINGENCY: '+rs.score+'/100 -- peak seat use '+rs.seatUtil+'%, '+rs.pctTight+'% of '+rs.rules+' rules met with zero slack.\n\n'+
+        stateContextForAI()+'\n\n'+solutionContextForAI(s, state.selectedGroup||0),
+        plan.tokens);
+      return {text: raw.trim(), isComparison:false};
+    }
+
+    // Multiple distinct solutions exist -- cover all of them, holistically, like Compare Solutions does.
+    const ctx = reps.map((s,i)=>solutionContextForAI(s,i)).join('\n\n');
+    const scoreCounts = {};
+    reps.forEach(r=>{ scoreCounts[r.trust.overall]=(scoreCounts[r.trust.overall]||0)+1; });
+    const ties = Object.keys(scoreCounts).filter(k=>scoreCounts[k]>1);
+    const plan = lengthPlan(reps.length*22 + state.teams.length*3 + (ties.length?20:0));
     const raw = await aiCall(
-      'You are a hybrid-work strategy advisor. Write a decision-grade analysis of this schedule as PLAIN PARAGRAPHS for a printed one-page report -- NOT markdown, but you may use short UPPERCASE section headings on their own line (CONTEXT, WHY THIS SHAPE, IMPACT, PROS, CONS, RECOMMENDATION) to organise it, each followed by 2-4 sentences of flowing prose.\n'+
-      'Rules: be specific -- cite the actual numbers, days, and team names below. No bullet characters, no markdown symbols, no bold/italics markup. Keep it tight: '+plan.minWords+'-'+Math.round(plan.minWords*1.3)+' words total, written to fit cleanly on one printed page.\n\n'+
-      'TRUST WEIGHTS: Seat '+W.seat+'%, Synergy '+W.synergy+'%, Attendance '+W.attendance+'%, Balance '+W.balance+'%.\n'+
-      'REALIZED STRINGENCY: '+rs.score+'/100 -- peak seat use '+rs.seatUtil+'%, '+rs.pctTight+'% of '+rs.rules+' rules met with zero slack.\n'+
-      (sibs ? 'SAME-SCORE ALTERNATIVES: '+sibs.join(' ')+'\n' : '')+
-      '\n'+stateContextForAI()+'\n\n'+solutionContextForAI(s, state.selectedGroup||0),
-      Math.min(2200, plan.tokens));
-    return raw.trim();
+      'You are a hybrid-work strategy advisor writing the AI page of a printed executive report. Compare ALL '+reps.length+' distinct schedule options below as PLAIN PARAGRAPHS -- NOT markdown, but use short UPPERCASE section headings on their own line to organise it: THE OPTIONS AT A GLANCE (one short paragraph per option -- its character, who it favours, its weakest point), TRADE-OFFS (the real trade-offs moving between options, citing actual numbers and days), '+
+      (ties.length ? 'SAME-SCORE DIFFERENT SHAPE (options tied at '+ties.join(' and ')+'/100 are structurally different -- explain what actually differs), ' : '')+
+      'RECOMMENDATION (declare which option you would pick for this org and defend it against the runner-up).\n'+
+      lengthInstruction(plan, 3+(ties.length?1:0))+'\n'+
+      'Rules: cite actual team names, days, loads and Trust sub-scores from the data. No markdown symbols, no bullet characters.\n\n'+
+      'TRUST WEIGHTS: Seat '+W.seat+'%, Synergy '+W.synergy+'%, Attendance '+W.attendance+'%, Balance '+W.balance+'%.\n\n'+
+      stateContextForAI()+'\n\n'+ctx,
+      plan.tokens);
+    return {text: raw.trim(), isComparison:true};
   }
 
   // ───────────────────────────────────────────────
@@ -5125,13 +5188,11 @@ self.onmessage = function(ev){
     const c = Math.max(1, complexity);
     const minWords = Math.round(Math.min(950, 260 + c*3.2));
     const maxWords = Math.round(minWords * 1.45);
-    const tokens = Math.round(Math.min(4000, maxWords*1.75 + 350));
+    const tokens = Math.round(Math.min(6000, maxWords*2.2 + 500));
     return {minWords, maxWords, tokens};
   }
   function lengthInstruction(plan, sectionCount){
-    return 'LENGTH REQUIREMENT — treat this as a hard floor, not a suggestion: write at least '+plan.minWords+' words and no more than '+plan.maxWords+'. '+
-      'Under every one of the '+sectionCount+' headings below, write a minimum of 3 full sentences — never a single line, never a bare list with no prose, and never skip a heading. '+
-      'If a heading genuinely has little to say, write 1-2 sentences explaining why it\'s thin here rather than leaving it empty. Shallow, generic filler does not count toward the word minimum — every sentence must cite an actual number, day, team name, or score from the data below.';
+    return 'LENGTH — a natural guide, not a rule: roughly '+plan.minWords+'-'+plan.maxWords+' words fits this scenario\'s complexity, but let the actual content decide, not a target. Write shorter if there is genuinely little to say under a heading; write longer if there is real nuance worth covering. Don\'t pad with repetition just to hit a number, and don\'t skip a heading entirely — a couple of honest sentences under each of the '+sectionCount+' headings beats an artificially inflated one. Ground statements in the actual numbers, days, team names, and scores below rather than generic filler.';
   }
   async function aiCall(prompt, maxTokens){
     const {provider, key, model} = state.ai;
@@ -5170,11 +5231,13 @@ self.onmessage = function(ev){
   function openAIModal(title, body){
     $(&quot;aiModalTitle&quot;).innerHTML = title;
     $(&quot;aiModalBody&quot;).textContent = body;
+    $(&quot;aiCautionNote&quot;).style.display = &quot;block&quot;;
     $(&quot;aiModal&quot;).style.display = &quot;block&quot;;
   }
   function openAIModalLoading(title){
     $(&quot;aiModalTitle&quot;).innerHTML = title;
     $(&quot;aiModalBody&quot;).innerHTML = '<span class=&quot;spinner&quot;></span> Thinking…';
+    $(&quot;aiCautionNote&quot;).style.display = &quot;block&quot;;
     $(&quot;aiModal&quot;).style.display = &quot;block&quot;;
   }
   $(&quot;aiModalCloseBtn&quot;).onclick = ()=>{ $(&quot;aiModal&quot;).style.display=&quot;none&quot;; };
@@ -5184,11 +5247,24 @@ self.onmessage = function(ev){
     if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>{ $(&quot;aiCopyBtn&quot;).textContent=&quot;Copied!&quot;; setTimeout(()=>$(&quot;aiCopyBtn&quot;).textContent=&quot;Copy&quot;,1200); });
   };
 
+  // v2.11: surfaces &quot;Must hubs&quot; -- teams juggling several simultaneous Must relationships,
+  // which is the real, common cause of a team landing on more days than its stated minimum.
+  // Feeding this to the AI lets it name the actual structural reason instead of guessing.
+  function mustHubSummary(){
+    const rules = resolveRules().resolved.filter(r=>r.priority===&quot;must&quot;);
+    const count = state.teams.map(()=>0);
+    rules.forEach(r=>{ count[r.i]++; count[r.j]++; });
+    const withCounts = state.teams.map((t,i)=>({name:t.name, count:count[i]})).filter(x=>x.count>0).sort((a,b)=>b.count-a.count);
+    if(!withCounts.length) return &quot;MUST-RELATIONSHIP LOAD: no active Must synergy rules.&quot;;
+    const lines = withCounts.map(x=>&quot;- &quot;+x.name+&quot;: &quot;+x.count+&quot; simultaneous Must relationship&quot;+(x.count===1?&quot;&quot;:&quot;s&quot;));
+    return &quot;MUST-RELATIONSHIP LOAD (how many simultaneous Must-priority partners each team must satisfy at once -- a team with noticeably more than the rest is a 'Must hub' and may need more office days than its own stated minimum just to avoid missing any one of them):\n&quot;+lines.join(&quot;\n&quot;);
+  }
   function stateContextForAI(){
     const rules = resolveRules().resolved;
-    return &quot;TEAMS:\n&quot; + state.teams.map((t,i)=>&quot;- &quot;+t.name+&quot;: headcount &quot;+t.headcount+&quot;, exempt &quot;+t.exempt+&quot;%, effective &quot;+effHCOf(t)+&quot;, min office days &quot;+t.minDays).join(&quot;\n&quot;) +
+    return &quot;TEAMS:\n&quot; + state.teams.map((t,i)=>&quot;- &quot;+t.name+&quot;: headcount &quot;+t.headcount+&quot;, exempt &quot;+t.exempt+&quot;%, effective &quot;+effHCOf(t)+&quot;, min office days &quot;+t.minDays+&quot; (&quot;+(t.minDaysPriority===&quot;must&quot;?&quot;Must&quot;:&quot;Should&quot;)+&quot;)&quot;).join(&quot;\n&quot;) +
       &quot;\nSEATS: &quot;+(+$(&quot;seats&quot;).value||0)+
-      &quot;\nSYNERGY RULES (active):\n&quot; + (rules.length ? rules.map(r=>&quot;- &quot;+state.teams[r.i].name+&quot; <-> &quot;+state.teams[r.j].name+&quot;: &quot;+r.priority.toUpperCase()+&quot; &quot;+freqLabel(r.freq)).join(&quot;\n&quot;) : &quot;- none&quot;);
+      &quot;\nSYNERGY RULES (active):\n&quot; + (rules.length ? rules.map(r=>&quot;- &quot;+state.teams[r.i].name+&quot; <-> &quot;+state.teams[r.j].name+&quot;: &quot;+r.priority.toUpperCase()+&quot; &quot;+freqLabel(r.freq)).join(&quot;\n&quot;) : &quot;- none&quot;) +
+      &quot;\n\n&quot;+mustHubSummary();
   }
   function solutionContextForAI(s, idx){
     const e=s.eval, t=s.trust;
@@ -5403,7 +5479,7 @@ self.onmessage = function(ev){
       const out = await aiCall(
         'You are a hybrid-work strategy advisor briefing a workplace leader who must make a real decision from this schedule. Write a thorough, decision-grade analysis in plain text using these UPPERCASE section headings, each on its own line: CONTEXT, WHAT THIS SCHEDULE DOES, WHY THE SOLVER CHOSE THIS SHAPE, IMPACT (cover leadership/space planning, team leads, and employees separately), PROS, CONS, WATCH-OUTS, BOTTOM LINE.\n'+
         lengthInstruction(plan, sections)+'\n'+
-        'Rules: be specific — always cite the actual numbers, day names, and team names from the data below rather than generalities. Explain cause and effect (e.g. WHY a peak lands on that day, WHAT a sub-score would look like if a rule were relaxed). In PROS and CONS give 3-5 concrete items each, one full sentence per item, not just a phrase. No markdown symbols, no bullet characters other than a leading dash.\n\n'+
+        'Rules: be specific — always cite the actual numbers, day names, and team names from the data below rather than generalities. Explain cause and effect (e.g. WHY a peak lands on that day, WHAT a sub-score would look like if a rule were relaxed). If any team in MUST-RELATIONSHIP LOAD carries noticeably more simultaneous Must relationships than the rest, name it specifically in WHY THE SOLVER CHOSE THIS SHAPE — that is very often the real, structural reason a team lands on more office days than its own stated minimum: it must catch every one of its Must partners, and if their days don\'t naturally cluster, it has no choice but to spread wider. Don\'t describe this as a solver quirk; name the specific teams responsible and suggest which of that hub team\'s Must relationships is the weakest candidate to downgrade to Should if fewer days is the goal. In PROS and CONS give 3-5 concrete items each, one full sentence per item, not just a phrase. No markdown symbols, no bullet characters other than a leading dash.\n\n'+
         'TRUST WEIGHTS IN USE: Seat '+W.seat+'%, Synergy '+W.synergy+'%, Attendance '+W.attendance+'%, Balance '+W.balance+'% (user-adjustable).\n'+
         'REALIZED STRINGENCY (measured post-run): '+rs.score+'/100 — peak seat use '+rs.seatUtil+'%, '+rs.pctTight+'% of '+rs.rules+' active rules met with zero slack.\n'+
         (sibs ? 'SAME-SCORE ALTERNATIVES EXIST — explicitly address this in your analysis: '+sibs.join(&quot; &quot;)+'\n' : '')+
@@ -5430,7 +5506,7 @@ self.onmessage = function(ev){
         (ties.length ? 'SAME-SCORE, DIFFERENT SHAPE (options tied at '+ties.join(&quot; and &quot;)+'/100 are structurally different schedules — explain concretely what differs between them and why a leader might still strongly prefer one over the other), ' : '')+
         'WINNER BY LENS (name the best option if space/cost efficiency matters most; if team cohesion matters most; if employee flexibility matters most — one short justification each), OVERALL WINNER (declare ONE option and defend the choice against the runner-up in 3-4 sentences).\n'+
         lengthInstruction(plan, sections)+' For THE OPTIONS AT A GLANCE, that minimum applies per option, not to the section as a whole.\n'+
-        'Rules: cite actual team names, days, loads and sub-scores from the data. No markdown symbols.\n'+
+        'Rules: cite actual team names, days, loads and sub-scores from the data. If MUST-RELATIONSHIP LOAD shows one team carrying noticeably more simultaneous Must relationships than the rest, treat that as a structural fact shared by every option, not a flaw of any one — mention it once in TRADE-OFFS if it explains why that team\'s day count looks similar across options regardless of which is chosen. No markdown symbols.\n'+
         'TRUST WEIGHTS IN USE: Seat '+W.seat+'%, Synergy '+W.synergy+'%, Attendance '+W.attendance+'%, Balance '+W.balance+'%.\n\n'+
         stateContextForAI()+&quot;\n\n&quot;+ctx, plan.tokens);
       openAIModal(&quot;&amp;#10024; Solution Comparison&quot;, out.trim());
