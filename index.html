@@ -296,7 +296,7 @@ body{display:flex;flex-direction:column}
 /* SCORED-DIMS VIS */
 .score-dims{margin:20px 0}
 .score-dim-row{
-  display:flex;align-items:center;gap:14px;
+  display:flex;align-items:center;flex-wrap:wrap;gap:14px;
   padding:12px 0;border-bottom:1px solid var(--border);
 }
 .score-dim-row:last-child{border-bottom:none}
@@ -311,9 +311,33 @@ body{display:flex;flex-direction:column}
 .score-dim-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
 .score-dim-fill{height:100%;border-radius:3px}
 .score-dim-desc{font-size:12px;color:var(--text2);width:200px;flex-shrink:0}
+.score-dim-why{flex-basis:100%;font-size:11.5px;color:var(--text3);font-style:italic;padding-left:144px;margin-top:2px;line-height:1.5}
 
 /* MODE COMPARE */
 .mode-compare{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:20px 0}
+/* two-pipeline illustration: same raw metrics, two different combinations */
+.metric-source{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:18px 0;padding:14px;background:var(--bg3);border-radius:var(--r2)}
+.metric-chip{font-family:var(--mono);font-size:10.5px;padding:5px 10px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
+.split-arrows{display:flex;justify-content:space-around;font-size:20px;color:var(--text3);margin:2px 0}
+.tier-box{border-radius:var(--r);padding:10px 12px;margin-bottom:8px;font-size:11.5px}
+.tier-box .tier-label{font-weight:800;font-size:10px;letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px;display:block}
+.tier-box.crit{background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25)}
+.tier-box.crit .tier-label{color:var(--red)}
+.tier-box.pref{background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.25)}
+.tier-box.pref .tier-label{color:var(--amber)}
+.tier-box.shape{background:var(--bg3);border:1px solid var(--border)}
+.tier-box.shape .tier-label{color:var(--text3)}
+.cat-box{border-radius:var(--r);padding:10px 12px;margin-bottom:8px;font-size:11.5px}
+.cat-box .tier-label{font-weight:800;font-size:10px;letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px;display:block}
+.cat-box.seat{background:rgba(36,115,255,.08);border:1px solid rgba(36,115,255,.25)}
+.cat-box.seat .tier-label{color:var(--accent)}
+.cat-box.syn{background:rgba(14,138,138,.08);border:1px solid rgba(14,138,138,.25)}
+.cat-box.syn .tier-label{color:var(--teal)}
+.cat-box.att{background:rgba(21,128,61,.08);border:1px solid rgba(21,128,61,.25)}
+.cat-box.att .tier-label{color:var(--green)}
+.cat-box.bal{background:rgba(123,63,228,.08);border:1px solid rgba(123,63,228,.25)}
+.cat-box.bal .tier-label{color:#7B3FE4}
+.pipe-out{text-align:center;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text2);padding:8px;background:var(--bg2);border:1px dashed var(--border);border-radius:var(--r)}
 .mode-card{
   border:1px solid var(--border);border-radius:var(--r2);
   padding:16px;background:var(--bg2);
@@ -587,7 +611,7 @@ code{
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><path d="M3 14h7v7H3z" rx="1"/><path d="M17 14v3M17 20v1M14 17h3M20 17h1"/></svg>
     </div>
     <span class="nav-wordmark">HYBRID·SCHEDULER</span>
-    <span class="nav-version">v2.8</span>
+    <span class="nav-version">v2.9</span>
   </a>
   <div class="nav-tabs">
     <button class="nav-tab active" data-tab="doc" onclick="switchTab('doc')">DOCUMENTATION</button>
@@ -668,7 +692,7 @@ code{
 
         <div class="callout">
           <div class="callout-title">CORE PURPOSE</div>
-          <p>Match teams to office days so that synergy pairs share time, seat capacity is never exceeded, every team hits its minimum days without inflating beyond what's actually required, and the weekly load is as smooth as possible — all at once, automatically.</p>
+          <p>Match teams to office days so that synergy pairs share time, seat capacity is never exceeded, the weekly load is as smooth as possible, and every team's minimum office days are honored to the degree you've asked for — guaranteed if you marked it Must, a strong target the solver tries hard to hit if you marked it Should — all at once, automatically.</p>
         </div>
 
         <h3>Who is it built for?</h3>
@@ -747,8 +771,8 @@ code{
             </tr>
             <tr>
               <td>Team Builder</td>
-              <td>Add each team with headcount, exempt %, and minimum required office days. Or load one of 3 starting presets (Small / Growing / Enterprise) and edit from there.</td>
-              <td>Effective headcount per team, minimum day constraints (the solver's day floor)</td>
+              <td>Add each team with headcount, exempt %, and minimum required office days — each minimum carries its own <strong>Must / Should</strong> priority, defaulting to Should. Or load one of 3 starting presets (Small / Growing / Enterprise) and edit from there.</td>
+              <td>Effective headcount per team, and each team's real attendance floor (see callout below)</td>
             </tr>
             <tr>
               <td>Synergy Matrix</td>
@@ -776,6 +800,15 @@ code{
         <div class="callout warn">
           <div class="callout-title">ABOUT EXEMPT %</div>
           <p>The <strong>Exempt %</strong> field accounts for employees who are permanently remote, part-time, or otherwise never come to the office. The solver works from <strong>Effective Headcount</strong> = Headcount × (1 − Exempt%), so seat math is always realistic.</p>
+        </div>
+
+        <div class="callout success">
+          <div class="callout-title">MINIMUM DAYS NOW HAS A REAL PRIORITY — MUST vs. SHOULD</div>
+          <p>Every team's Minimum Days field now carries its own priority, exactly like a synergy rule does — <strong>Must</strong> or <strong>Should</strong>, defaulting to Should. This closes a real inconsistency: previously, a stated minimum was <em>more</em> rigid than even a Must synergy rule — the solver was structurally incapable of ever generating a schedule below it, no matter what else was at stake. That's backwards from how "Must" and "Should" read everywhere else in the app.</p>
+          <p style="margin-top:10px"><strong>Must</strong> behaves exactly as Minimum Days always has — an unconditional floor. The solver cannot generate a candidate below it, full stop.</p>
+          <p style="margin-top:10px"><strong>Should</strong> (the default) is a strong target, not a guarantee. The solver tries hard to hit it and very rarely falls short — but it genuinely can, if giving up one day for that team produces a meaningfully better schedule overall (say, satisfying several other teams' rules that would otherwise be missed). A miss costs 90 points per short day — the same rate as a missed Should synergy rule — and never blocks a solution from being called feasible, exactly like a missed Should synergy rule doesn't.</p>
+          <p style="margin-top:10px">One thing that doesn't change regardless of which tier you pick: the solver still won't pad a team's schedule <em>beyond</em> its target without good reason — the existing excess-day penalty (120 points per day over) still applies. Priority controls whether the floor can be missed, not whether it can be exceeded.</p>
+          <p style="margin-top:10px">The Matrix's diagonal cell (Team A × Team A) now shows this at a glance instead of sitting blank: a solid badge for Must, a dashed-outline badge for Should — deliberately styled to look like a fact versus an aim — and a note if a partner's Must synergy rule has silently raised the real floor above what you typed.</p>
         </div>
       </div>
 
@@ -871,31 +904,70 @@ code{
       <div class="doc-section" id="scoring">
         <div class="doc-section-eyebrow">SCORING</div>
         <h2>The scoring formula</h2>
-        <p>Every candidate solution receives a numerical score. Higher is better. The solver maximizes this score across all iterations. A perfect solution with zero violations scores close to 1,000,000.</p>
+        <p>Every candidate schedule gets one number. Higher wins. A clean solution — no overflow, no broken Musts — clears 100,000; every violation chips away from there.</p>
 
         <div class="formula-block reveal" id="formulaBlock">
           <div class="f-label">// SOLVER OBJECTIVE FUNCTION</div>
           <div class="f-base">score = (feasible ? 100,000 : 0)</div>
-          <div class="formula-line" data-pen="450"><span class="f-penalty">− overflow × 450</span> <span class="f-label">// seats exceeded (critical)</span></div>
-          <div class="formula-line" data-pen="520"><span class="f-penalty">− mustMiss × 520</span> <span class="f-label">// Must synergy rule missed (critical)</span></div>
-          <div class="formula-line" data-pen="450"><span class="f-penalty">− minDayMiss × 450</span> <span class="f-label">// team below minimum office days</span></div>
-          <div class="formula-line" data-pen="120"><span class="f-penalty">− excessDays × 120</span> <span class="f-label">// NEW in v2 — office day beyond what's actually required</span></div>
+          <div class="formula-line" data-pen="450"><span class="f-penalty">− overflow × 450</span> <span class="f-label">// seats exceeded</span></div>
+          <div class="formula-line" data-pen="520"><span class="f-penalty">− mustMiss × 520</span> <span class="f-label">// Must synergy rule missed</span></div>
+          <div class="formula-line" data-pen="450"><span class="f-penalty">− minDayMissMust × 450</span> <span class="f-label">// can't actually happen — structurally guaranteed</span></div>
+          <div class="formula-line" data-pen="90"><span class="f-weight">− minDayMissShould × 90</span> <span class="f-label">// v2.9 — Should-tier attendance target missed</span></div>
+          <div class="formula-line" data-pen="120"><span class="f-penalty">− excessDays × 120</span> <span class="f-label">// an office day nobody asked for</span></div>
           <div class="formula-line" data-pen="90"><span class="f-weight">− shouldMiss × 90</span> <span class="f-label">// Should synergy rule missed</span></div>
           <div class="formula-line" data-pen="40"><span class="f-weight">− goodMiss × 40</span> <span class="f-label">// Good synergy rule missed</span></div>
           <div class="formula-line" data-pen="5"><span class="f-weight">− smoothnessPenalty × 0.5</span> <span class="f-label">// day-to-day load variance</span></div>
-          <div class="formula-line" data-pen="8"><span class="f-weight">− peak × 0.5</span> <span class="f-label">// soft discouragement of high peaks</span></div>
+          <div class="formula-line" data-pen="8"><span class="f-weight">− peak × 0.5</span> <span class="f-label">// discourages tall peaks</span></div>
           <div class="formula-total">
             <span class="formula-total-label">Running Score</span>
             <span class="formula-total-num" id="formulaTotal">100,000</span>
           </div>
         </div>
 
-        <p>The coefficients encode a priority hierarchy. <strong>Seat overflow and Must-rule violations carry the heaviest penalties</strong> (450–520 points per occurrence). Should violations are ~6× cheaper than Must violations, and Good violations are ~13× cheaper. This means a feasible plan with a few Should misses will still score far higher than one that violates a Must rule even once. The <strong>excessDays</strong> term is new in v2: it's what stops the solver from padding schedules with days nobody actually needed — see the day-inflation callout above.</p>
+        <p>The gaps between these numbers are the point, not an accident. Overflow, a broken Must, and a broken Must-tier minimum all sit at 450–520 — to the solver, they're the same species of failure: <em>non-negotiable</em>. Every Should violation, whichever flavor, costs 90; every Good violation costs 40. Six Should misses would have to gang up before they'd outweigh one Must violation — that margin is what keeps "Must" meaning <em>must</em>, even while thousands of candidates are being compared per second. <strong>excessDays</strong> plays a narrower role: it's the tax on office days nobody actually asked for.</p>
 
         <div class="callout">
           <div class="callout-title">FEASIBILITY FLAG</div>
-          <p>If and only if overflow = 0, mustMiss = 0, and minDayMiss = 0, a solution is flagged <strong>feasible</strong> and receives a 100,000-point bonus. This creates a hard cliff separating infeasible from feasible solutions, so the solver always strongly prefers any feasible solution over even a highly-optimized infeasible one. (v1's feasibility flag also required zone-overflow and NBD-rule thresholds — both gone now that the zone system has been removed.)</p>
+          <p>Feasible requires overflow = 0, mustMiss = 0, and minDayMiss<em>Must</em> = 0 — nothing else. A missed Should, attendance or synergy, never disqualifies a solution; it just costs points. Miss the cliff and you lose the entire 100,000-point bonus in one stroke, which is why the solver will always take a feasible plan over a beautifully-optimized infeasible one.</p>
         </div>
+
+        <h3>One set of numbers, two different jobs</h3>
+        <p>Don't conflate this formula with the Trust Score below — related, but not the same machine. Every candidate produces one set of raw counts. Those counts feed two parallel calculations, grouped and weighted for two different audiences.</p>
+
+        <div class="metric-source">
+          <span class="metric-chip">overflow</span>
+          <span class="metric-chip">mustMiss</span>
+          <span class="metric-chip">minDayMissMust</span>
+          <span class="metric-chip">minDayMissShould</span>
+          <span class="metric-chip">shouldMiss</span>
+          <span class="metric-chip">goodMiss</span>
+          <span class="metric-chip">excessDays</span>
+          <span class="metric-chip">smoothness</span>
+          <span class="metric-chip">peak</span>
+        </div>
+        <div class="split-arrows"><span>&#8600;</span><span>&#8601;</span></div>
+
+        <div class="mode-compare" style="grid-template-columns:1fr 1fr">
+          <div class="mode-card">
+            <h4>RAW SOLVER SCORE — by severity</h4>
+            <p style="margin-bottom:10px">The search's private yardstick. Never shown to you.</p>
+            <div class="tier-box crit"><span class="tier-label">Critical · 450–520 pts</span>overflow, mustMiss, minDayMissMust</div>
+            <div class="tier-box pref"><span class="tier-label">Preference · 90 pts</span>shouldMiss, minDayMissShould</div>
+            <div class="tier-box shape"><span class="tier-label">Shape · ≤40 pts</span>goodMiss, excessDays, smoothness, peak</div>
+            <div class="pipe-out">→ one ranking number</div>
+          </div>
+          <div class="mode-card">
+            <h4>TRUST SCORE — by category</h4>
+            <p style="margin-bottom:10px">The human-readable verdict, built after the search ends.</p>
+            <div class="cat-box seat"><span class="tier-label">Seat Fit · 30%</span>overflow</div>
+            <div class="cat-box syn"><span class="tier-label">Synergy Fit · 25%</span>mustMiss, shouldMiss, goodMiss</div>
+            <div class="cat-box att"><span class="tier-label">Attendance Fit · 20%</span>minDayMissMust, minDayMissShould</div>
+            <div class="cat-box bal"><span class="tier-label">Balance Fit · 25%</span>peak vs. quietest day</div>
+            <div class="pipe-out">→ four sub-scores, weighted &amp; summed</div>
+          </div>
+        </div>
+
+        <p style="margin-top:4px">The numbers differ on purpose: the left column is built to make the search flinch away from Must violations; the right column is built to explain a result to a person, so its internal penalties (coming up next) are far gentler. Notice the two attendance metrics feed exactly one sub-score each, on the right — same split, same idea, just translated for a human reader.</p>
       </div>
 
       <div class="doc-divider"></div>
@@ -904,7 +976,7 @@ code{
       <div class="doc-section" id="trust">
         <div class="doc-section-eyebrow">CONFIDENCE RATING</div>
         <h2>The Trust Score explained</h2>
-        <p>The raw solver score is a single number optimized for math. The <strong>Trust Score</strong> translates that into a human-readable 0–100 confidence rating that tells you <em>why</em> a solution is good or bad across five named dimensions.</p>
+        <p>The raw score is math for a machine. The <strong>Trust Score</strong> is the same judgment translated for a person — one 0–100 number, built from four named dimensions, each answering a different question about the same schedule.</p>
 
         <div class="illus-block">
           <div class="illus-title">TRUST SCORE — 4 DIMENSIONS</div>
@@ -913,41 +985,45 @@ code{
               <div class="score-dim-label">Seat Fit</div>
               <div class="score-dim-weight">30%</div>
               <div class="score-dim-track"><div class="score-dim-fill" style="--target:100%;background:linear-gradient(90deg,#1A5CE8,#5B9BFF)"></div></div>
-              <div class="score-dim-desc">Zero overflow = 100. Each overflowed person costs 2 points.</div>
+              <div class="score-dim-desc">Zero overflow = 100. Each overflowed person: −2.</div>
+              <div class="score-dim-why">Does everyone fit in the room. The one dimension with no opinion — just physics.</div>
             </div>
             <div class="score-dim-row" data-target="80%">
               <div class="score-dim-label">Synergy Fit</div>
               <div class="score-dim-weight">25%</div>
               <div class="score-dim-track"><div class="score-dim-fill" style="--target:80%;background:linear-gradient(90deg,#0E8A8A,#3DD6D6)"></div></div>
-              <div class="score-dim-desc">Must miss = −25 pts, Should miss = −8, Good miss = −4.</div>
+              <div class="score-dim-desc">Must miss = −25, Should = −8, Good = −4.</div>
+              <div class="score-dim-why">How many promises to collaborate actually held, weighted by how much you meant each one.</div>
             </div>
             <div class="score-dim-row" data-target="70%">
               <div class="score-dim-label">Attendance Fit</div>
               <div class="score-dim-weight">20%</div>
               <div class="score-dim-track"><div class="score-dim-fill" style="--target:70%;background:linear-gradient(90deg,#15803D,#3ECF74)"></div></div>
-              <div class="score-dim-desc">Each minimum-day miss costs 15 points from this dimension.</div>
+              <div class="score-dim-desc">Should miss = −15. Must miss: can't happen.</div>
+              <div class="score-dim-why">Before v2.9 this number never moved. A dip now means one team's own floor lost to something the solver judged more important.</div>
             </div>
             <div class="score-dim-row" data-target="65%">
               <div class="score-dim-label">Balance Fit</div>
               <div class="score-dim-weight">25%</div>
               <div class="score-dim-track"><div class="score-dim-fill" style="--target:65%;background:linear-gradient(90deg,#7B3FE4,#BB86FC)"></div></div>
-              <div class="score-dim-desc">Peak minus min load, normalized to seat count. Smoother = higher.</div>
+              <div class="score-dim-desc">Peak minus quietest day, seat-normalised.</div>
+              <div class="score-dim-why">A week can satisfy every rule on paper and still feel chaotic to live through. This is the dimension that catches that.</div>
             </div>
           </div>
           <p style="font-size:12px;color:var(--text3);margin-top:16px;font-family:var(--mono)">OVERALL = (Seat×0.30) + (Synergy×0.25) + (Attendance×0.20) + (Balance×0.25)</p>
         </div>
 
-        <p>v1 had a fifth dimension, NBD Fit, weighted at 15%. With the zone system removed, that weight moved entirely into Balance Fit (10% → 25%) rather than being redistributed thinly across all four — balance across the week is the dimension closest in spirit to what NBD Fit used to reward.</p>
+        <p>These weights are the default, not a law — <a href="#synergy">adjust them</a> to fit your own priorities, and every solved schedule re-scores instantly from the same run. v1 carried a fifth dimension, NBD Fit, at 15%; when the zone system was removed, that weight moved wholesale into Balance rather than thinning across all four — balance is the closest living relative to what NBD Fit used to reward.</p>
 
-        <p>The Trust Score is displayed on every solution card. You can compare it across the top distinct solutions to understand the tradeoffs — one solution may sacrifice some synergy for better seat balance, while another nails synergy but is slightly peakier.</p>
+        <p>The Trust Score sits on every solution card, so you can read the trade-offs at a glance: one option may trade synergy for seat balance, another nails synergy but runs peakier. It's a compass, not a verdict — read the dimension that matters most to you, not just the headline number.</p>
 
         <div class="callout success">
-          <div class="callout-title">ADJUSTABLE WEIGHTS — NEW IN v2.2</div>
-          <p>The 30/25/20/25 split is now only the <em>default</em>. A weights panel under the solution buttons lets you set your own split (it must sum to 100) — a space-constrained office might push Seat Fit to 40, a collaboration-first culture might raise Synergy. Applying recalculates every solution's Trust Score <strong>from the same solver run</strong> (no re-solve needed) and re-groups the options, since score ties that existed under the old weights may split apart and new ties may fold together. Weights persist through autosave and saved sessions, and an (i) button in the panel explains the reasoning behind the defaults.</p>
+          <div class="callout-title">ADJUSTABLE WEIGHTS</div>
+          <p>30/25/20/25 is only the default. A weights panel under the solution buttons lets you set your own split — a space-constrained office might push Seat to 40; a collaboration-first culture might raise Synergy. Applying recalculates every solution <strong>from the same run</strong>, no re-solve needed, and re-groups the options since old ties may split and new ones may form.</p>
         </div>
 
-        <h3>Stringency: estimated before, measured after</h3>
-        <p>The sidebar carries a live <strong>Synergy Stringency</strong> meter (renamed from "Complexity" in v2.2), weighted 13:2:1 across Must:Should:Good to match the solver's real miss-penalties. It is honestly labelled <em>pre-run</em>: before solving, it can only be a structural estimate from the rules on paper. After every run, the results panel shows <strong>Realized Stringency</strong> — measured from the actual solution: peak seat utilisation plus the share of active rules met with zero slack. The estimate tells you what you asked for; the measurement tells you how hard it actually was. Both meters carry (i) info buttons explaining exactly what they mean and what to do when they run hot.</p>
+        <h3>Stringency: a guess before, a fact after</h3>
+        <p>The sidebar's <strong>Synergy Stringency</strong> meter is honestly labelled <em>pre-run</em> — before solving, it's only a structural guess from the rules on paper. After every run, <strong>Realized Stringency</strong> replaces the guess with a measurement: peak seat use plus the share of rules that held with zero slack. One tells you what you asked for; the other tells you what it cost.</p>
       </div>
 
       <div class="doc-divider"></div>
@@ -1266,7 +1342,7 @@ code{
         </div>
 
         <h3>The Excel round-trip — rebuilt in v2</h3>
-        <p>Download an empty template (or export your exact current state) as a fully formatted workbook: styled headers, frozen panes, zebra-striped rows, and a comment on every input cell explaining what it does <em>and</em> how it affects the solver. Five sheets: <strong>Instructions, Setup, Teams, Synergy</strong> (linear, dropdown-validated), and <strong>Matrix Input</strong> (the new 20×20 short-code grid described above). Exporting your current state also adds the read-only Synergy Matrix view sheet. The Matrix Input sheet colors codes by criticality as you type (conditional formatting baked into the file), and every export carries a sortable timestamped filename — the template as <code>Hybrid Scheduler Tool_Input_Template- YYYY-MM-DD_HH-MM-SS.xlsx</code>, and Export Current State as <code>ScenarioName_YYYY-MM-DD_HH-MM-SS.xlsx</code>. This is a real upgrade from v1's plain, uncommented cell dump — and the NBD/Team Rules sheets from v1 are gone along with the feature.</p>
+        <p>Download an empty template (or export your exact current state) as a fully formatted workbook: styled headers, frozen panes, zebra-striped rows, and a comment on every input cell explaining what it does <em>and</em> how it affects the solver. Five sheets: <strong>Instructions, Setup, Teams</strong> (now including a <strong>Min Days Priority</strong> column — Must or Should, dropdown-validated, defaulting to Should for older files that predate this column), <strong>Synergy</strong> (linear, dropdown-validated), and <strong>Matrix Input</strong> (the new 20×20 short-code grid described above). Exporting your current state also adds the read-only Synergy Matrix view sheet. The Matrix Input sheet colors codes by criticality as you type (conditional formatting baked into the file), and every export carries a sortable timestamped filename — the template as <code>Hybrid Scheduler Tool_Input_Template- YYYY-MM-DD_HH-MM-SS.xlsx</code>, and Export Current State as <code>ScenarioName_YYYY-MM-DD_HH-MM-SS.xlsx</code>. This is a real upgrade from v1's plain, uncommented cell dump — and the NBD/Team Rules sheets from v1 are gone along with the feature.</p>
 
         <div class="sheet-stack reveal" id="sheetStack">
           <div class="sheet-chip">Instructions</div>
@@ -1586,6 +1662,10 @@ details.panel .panel-body{padding:0 12px 12px}
 .tl-lab{font-size:9px;color:#93a5c4;font-weight:800;margin-top:4px}
 .tl-val{font-size:10px;color:#e8eefb;font-weight:900;font-variant-numeric:tabular-nums}
 /* v2.4: recency + list view + review gate */
+.diag-badge{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 6px;border-radius:999px;font-size:9.5px;font-weight:800;line-height:1}
+.diag-badge.must{background:#7f1d1d;color:#fff;border:1px solid #7f1d1d}
+.diag-badge.should{background:transparent;color:var(--muted);border:1.5px dashed var(--muted)}
+.diag-note{font-size:9px;color:var(--muted);margin-top:2px;font-style:italic}
 .recency-legend{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--muted);margin:8px 0}
 .recency-bar{width:110px;height:8px;border-radius:5px;background:linear-gradient(90deg,#1d4ed8,#e5e7eb)}
 .mtabs{display:flex;gap:6px;margin-bottom:10px}
@@ -2382,7 +2462,8 @@ details.panel .panel-body{padding:0 12px 12px}
       name: (seed &amp;&amp; seed.name) || (&quot;Team &quot;+teamCode(state.teams.length)),
       headcount: (seed &amp;&amp; seed.headcount) ?? 25,
       exempt: (seed &amp;&amp; seed.exempt) ?? 5,
-      minDays: (seed &amp;&amp; seed.minDays) ?? 0
+      minDays: (seed &amp;&amp; seed.minDays) ?? 0,
+      minDaysPriority: (seed &amp;&amp; seed.minDaysPriority) || &quot;should&quot;
     });
     renderTeams(); syncRulesAfterTeamChange(); renderCompactPreview(); renderCounters(); updateMeters(); markDirty();
   }
@@ -2401,10 +2482,14 @@ details.panel .panel-body{padding:0 12px 12px}
         '<div class=&quot;grid4&quot;>'+
         '<div><label>Headcount</label><input type=&quot;number&quot; min=&quot;1&quot; value=&quot;'+t.headcount+'&quot; data-idx=&quot;'+idx+'&quot; data-field=&quot;headcount&quot;></div>'+
         '<div><label>Exempt %</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot; value=&quot;'+t.exempt+'&quot; data-idx=&quot;'+idx+'&quot; data-field=&quot;exempt&quot;></div>'+
-        '<div><label>Minimum Days Needed</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;5&quot; value=&quot;'+t.minDays+'&quot; data-idx=&quot;'+idx+'&quot; data-field=&quot;minDays&quot;></div>'+
+        '<div><label>Minimum Days Needed</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;5&quot; value=&quot;'+t.minDays+'&quot; data-idx=&quot;'+idx+'&quot; data-field=&quot;minDays&quot; style=&quot;margin-bottom:4px&quot;>'+
+          '<select data-idx=&quot;'+idx+'&quot; data-field=&quot;minDaysPriority&quot; title=&quot;Must = guaranteed, never traded off. Should = a strong target the solver can miss if something else scores better.&quot;>'+
+          '<option value=&quot;should&quot;'+((t.minDaysPriority||&quot;should&quot;)===&quot;should&quot;?' selected':'')+'>Should (soft target)</option>'+
+          '<option value=&quot;must&quot;'+(t.minDaysPriority===&quot;must&quot;?' selected':'')+'>Must (guaranteed)</option>'+
+          '</select></div>'+
         '<div><label>Effective HC</label><input value=&quot;'+eff+'&quot; disabled></div>'+
         '</div>'+
-        '<div class=&quot;tagline&quot;><span class=&quot;pill blue&quot;>Default exempt: 5%</span><span class=&quot;pill&quot;>Minimum days can stay 0 if fully flexible</span></div>';
+        '<div class=&quot;tagline&quot;><span class=&quot;pill blue&quot;>Default exempt: 5%</span><span class=&quot;pill&quot;>Minimum days can stay 0 if fully flexible</span><span class=&quot;pill '+((t.minDaysPriority||&quot;should&quot;)===&quot;must&quot;?&quot;must&quot;:&quot;should&quot;)+'&quot;>'+((t.minDaysPriority||&quot;should&quot;)===&quot;must&quot;?&quot;Must \u2014 this floor can never be missed&quot;:&quot;Should \u2014 solver can trade this away if it scores better&quot;)+'</span></div>';
       host.appendChild(card);
     });
   }
@@ -2414,7 +2499,16 @@ details.panel .panel-body{padding:0 12px 12px}
     if(!Number.isNaN(idx) &amp;&amp; t.dataset.field &amp;&amp; state.teams[idx]){
       const field=t.dataset.field;
       if(field===&quot;name&quot;) state.teams[idx].name = t.value;
+      else if(field===&quot;minDaysPriority&quot;){ state.teams[idx].minDaysPriority = t.value; renderTeams(); }
       else state.teams[idx][field] = +t.value || 0;
+      // v2.10: headcount/exempt used to only refresh Effective HC on the next full renderTeams()
+      // (add/remove team) -- live-patch just this one field instead, so it updates on every
+      // keystroke without rebuilding the whole card and stealing focus mid-type.
+      if(field===&quot;headcount&quot; || field===&quot;exempt&quot;){
+        const card = t.closest(&quot;.team-card&quot;);
+        const effField = card &amp;&amp; card.querySelector('input[disabled]');
+        if(effField) effField.value = effHCOf(state.teams[idx]);
+      }
       if(state.source!==&quot;Manual&quot;) setSource(&quot;Manual&quot;);
       renderCounters(); renderCompactPreview(); updateMeters(); markDirty();
     }
@@ -2541,13 +2635,31 @@ details.panel .panel-body{padding:0 12px 12px}
     const host = $(&quot;matrixArea&quot;), n = state.teams.length;
     updateDensityChip();
     if(n<2){ host.innerHTML = '<div class=&quot;empty&quot; style=&quot;margin:12px&quot;>Add at least two teams first.</div>'; return; }
+    const needArr = mustNeedDays(resolveRules().resolved); // effective floor per team: max(stated minDays, any Must-owed frequency)
     let html = '<table class=&quot;matrix&quot;><thead><tr><th>Team</th>';
     for(let j=0;j<n;j++) html += '<th>'+teamLabel(j)+'</th>';
     html += '</tr></thead><tbody>';
     for(let i=0;i<n;i++){
       html += '<tr><th>'+teamLabel(i)+'</th>';
       for(let j=0;j<n;j++){
-        if(i===j){ html += '<td style=&quot;background:#f8fbff&quot;>—</td>'; continue; }
+        if(i===j){
+          const need = needArr[i], stated = Math.max(0, Math.min(5, +state.teams[i].minDays||0));
+          const pri = state.teams[i].minDaysPriority || &quot;should&quot;;
+          let inner, note;
+          if(need===0){
+            inner = '<span class=&quot;diag-badge should&quot; style=&quot;border-style:solid;color:#c8ccd6&quot;>\u2014</span>';
+            note = &quot;No requirement&quot;;
+          } else if(pri===&quot;must&quot;){
+            inner = '<span class=&quot;diag-badge must&quot;>'+need+'d/wk</span>';
+            note = need>stated ? &quot;Must \u2014 raised by a partner&quot; : &quot;Must \u2014 guaranteed&quot;;
+          } else {
+            inner = '<span class=&quot;diag-badge should&quot;>'+need+'d/wk</span>';
+            note = need>stated ? &quot;Should \u2014 raised by a partner's Must&quot; : &quot;Should \u2014 solver's target, not guaranteed&quot;;
+          }
+          const tip = state.teams[i].name+&quot;'s own cell \u2014 not a synergy pair. &quot;+note+&quot;.&quot;;
+          html += '<td style=&quot;background:#f8fbff&quot; title=&quot;'+esc(tip)+'&quot;><div style=&quot;text-align:center;padding:4px 2px&quot;>'+inner+'<div class=&quot;diag-note&quot;>'+esc(note)+'</div></div></td>';
+          continue;
+        }
         if(state.mode===&quot;symmetric&quot;){
           if(i>j){ html += '<td style=&quot;background:#f8fbff&quot;>↖ same as above</td>'; continue; }
           const r=effPairRule(i,j), rc=hasPairOverride(i,j)?recencyOf(state.pairRules[pairKey(i,j)]):null;
@@ -2800,7 +2912,12 @@ details.panel .panel-body{padding:0 12px 12px}
       else { const d=Math.floor(Math.random()*5); mask=mask^(1<<d); }
     }
     else mask=randomMask(state.teams[t].minDays);
-    while(teamDays(mask).length < (+state.teams[t].minDays||0)) mask |= (1<<Math.floor(Math.random()*5));
+    // v2.9: the structural &quot;can never generate below this&quot; guarantee now applies ONLY to
+    // Must-tier teams. Should-tier teams may drop below their stated minimum if that scores
+    // better overall — a miss is still penalized (see evaluateCandidate), just no longer impossible.
+    if((state.teams[t].minDaysPriority||&quot;should&quot;)===&quot;must&quot;){
+      while(teamDays(mask).length < (+state.teams[t].minDays||0)) mask |= (1<<Math.floor(Math.random()*5));
+    }
     next[t]=mask; return next;
   }
   function resolveRules(){
@@ -2827,16 +2944,21 @@ details.panel .panel-body{padding:0 12px 12px}
   }
   function evaluateCandidate(masks, resolvedRules, seats, needDays){
     const patterns=masks.map(teamDays), loads=[0,0,0,0,0];
-    let overflow=0, mustMiss=0, shouldMiss=0, goodMiss=0, minDayMiss=0, excessDays=0;
+    let overflow=0, mustMiss=0, shouldMiss=0, goodMiss=0, minDayMissMust=0, minDayMissShould=0, excessDays=0;
     const minDayIssues=[];
     state.teams.forEach((t,idx)=>{
       const eff=Math.round((+t.headcount||0)*(1-(+t.exempt||0)/100));
       patterns[idx].forEach(d=>{ loads[d]+=eff; });
       const miss=Math.max(0,(+t.minDays||0)-patterns[idx].length);
-      if(miss>0){ minDayMiss+=miss; minDayIssues.push(t.name+' needs at least '+t.minDays+' day(s), but got '+patterns[idx].length+'.'); }
+      const mdPriority = t.minDaysPriority || &quot;should&quot;;
+      if(miss>0){
+        if(mdPriority===&quot;must&quot;) minDayMissMust+=miss; else minDayMissShould+=miss;
+        minDayIssues.push(t.name+' needs at least '+t.minDays+' day(s) ('+(mdPriority===&quot;must&quot;?&quot;Must&quot;:&quot;Should&quot;)+'), but got '+patterns[idx].length+'.');
+      }
       // ITEM 6 FIX 2: penalise days beyond what Must rules + minimums actually require
       excessDays += Math.max(0, patterns[idx].length - (needDays ? needDays[idx] : (+t.minDays||0)));
     });
+    const minDayMiss = minDayMissMust + minDayMissShould; // total, for reporting + Attendance Fit
     loads.forEach(x=>overflow+=Math.max(0,x-seats));
     resolvedRules.forEach(rule=>{
       const a=patterns[rule.i], b=patterns[rule.j]; let meet=0; a.forEach(d=>{ if(b.includes(d)) meet++; });
@@ -2845,10 +2967,13 @@ details.panel .panel-body{padding:0 12px 12px}
       if(rule.priority===&quot;should&quot;) shouldMiss+=miss;
       if(rule.priority===&quot;good&quot;) goodMiss+=miss;
     });
-    const feasible = overflow===0 &amp;&amp; mustMiss===0 &amp;&amp; minDayMiss===0;
+    // v2.9: feasibility (and the heavy 450/day penalty) now gate ONLY on Must-tier attendance
+    // misses -- which structurally can't happen anyway. A Should-tier miss is scored at 90/day,
+    // same rate as a missed Should synergy rule, and never blocks feasibility -- exactly like one.
+    const feasible = overflow===0 &amp;&amp; mustMiss===0 &amp;&amp; minDayMissMust===0;
     const peak=Math.max(...loads), avg=loads.reduce((a,b)=>a+b,0)/5, smooth=loads.reduce((s,x)=>s+Math.abs(x-avg),0);
-    const score=(feasible?100000:0)-overflow*450-mustMiss*520-minDayMiss*450-excessDays*120-shouldMiss*90-goodMiss*40-smooth*0.5-peak*.5;
-    return {feasible,score,loads,peak,avg,overflow,mustMiss,shouldMiss,goodMiss,minDayMiss,minDayIssues,excessDays,patterns};
+    const score=(feasible?100000:0)-overflow*450-mustMiss*520-minDayMissMust*450-minDayMissShould*90-excessDays*120-shouldMiss*90-goodMiss*40-smooth*0.5-peak*.5;
+    return {feasible,score,loads,peak,avg,overflow,mustMiss,shouldMiss,goodMiss,minDayMiss,minDayMissMust,minDayMissShould,minDayIssues,excessDays,patterns};
   }
 
   // ───────────────────────────────────────────────
@@ -2922,20 +3047,27 @@ self.onmessage = function(ev){
       else { const d=Math.floor(Math.random()*5); mask=mask^(1<<d); }
     }
     else mask=randomMask(teams[t].minDays);
-    while(teamDays(mask).length < (+teams[t].minDays||0)) mask |= (1<<Math.floor(Math.random()*5));
+    if((teams[t].minDaysPriority||&quot;should&quot;)===&quot;must&quot;){
+      while(teamDays(mask).length < (+teams[t].minDays||0)) mask |= (1<<Math.floor(Math.random()*5));
+    }
     next[t]=mask; return next;
   }
   function evaluateCandidate(masks){
     const patterns=masks.map(teamDays), loads=[0,0,0,0,0];
-    let overflow=0, mustMiss=0, shouldMiss=0, goodMiss=0, minDayMiss=0, excessDays=0;
+    let overflow=0, mustMiss=0, shouldMiss=0, goodMiss=0, minDayMissMust=0, minDayMissShould=0, excessDays=0;
     const minDayIssues=[];
     teams.forEach((t,idx)=>{
       const eff=Math.round((+t.headcount||0)*(1-(+t.exempt||0)/100));
       patterns[idx].forEach(d=>{ loads[d]+=eff; });
       const miss=Math.max(0,(+t.minDays||0)-patterns[idx].length);
-      if(miss>0){ minDayMiss+=miss; minDayIssues.push(t.name+&quot; min days&quot;); }
+      const mdPriority = t.minDaysPriority || &quot;should&quot;;
+      if(miss>0){
+        if(mdPriority===&quot;must&quot;) minDayMissMust+=miss; else minDayMissShould+=miss;
+        minDayIssues.push(t.name+&quot; min days (&quot;+(mdPriority===&quot;must&quot;?&quot;Must&quot;:&quot;Should&quot;)+&quot;)&quot;);
+      }
       excessDays += Math.max(0, patterns[idx].length - needDays[idx]);
     });
+    const minDayMiss = minDayMissMust + minDayMissShould;
     loads.forEach(x=>overflow+=Math.max(0,x-seats));
     resolvedRules.forEach(rule=>{
       const a=patterns[rule.i], b=patterns[rule.j]; let meet=0; a.forEach(d=>{ if(b.includes(d)) meet++; });
@@ -2944,10 +3076,10 @@ self.onmessage = function(ev){
       if(rule.priority===&quot;should&quot;) shouldMiss+=miss;
       if(rule.priority===&quot;good&quot;) goodMiss+=miss;
     });
-    const feasible = overflow===0 &amp;&amp; mustMiss===0 &amp;&amp; minDayMiss===0;
+    const feasible = overflow===0 &amp;&amp; mustMiss===0 &amp;&amp; minDayMissMust===0;
     const peak=Math.max(...loads), avg=loads.reduce((a,b)=>a+b,0)/5, smooth=loads.reduce((s,x)=>s+Math.abs(x-avg),0);
-    const score=(feasible?100000:0)-overflow*450-mustMiss*520-minDayMiss*450-excessDays*120-shouldMiss*90-goodMiss*40-smooth*0.5-peak*.5;
-    return {feasible,score,loads,peak,avg,overflow,mustMiss,shouldMiss,goodMiss,minDayMiss,minDayIssues,excessDays,patterns};
+    const score=(feasible?100000:0)-overflow*450-mustMiss*520-minDayMissMust*450-minDayMissShould*90-excessDays*120-shouldMiss*90-goodMiss*40-smooth*0.5-peak*.5;
+    return {feasible,score,loads,peak,avg,overflow,mustMiss,shouldMiss,goodMiss,minDayMiss,minDayMissMust,minDayMissShould,minDayIssues,excessDays,patterns};
   }
   function trustMetrics(result){
     const e=result.eval;
@@ -3990,28 +4122,30 @@ self.onmessage = function(ev){
 
   function addTeamsSheet(wb, fromState){
     const ws = wb.addWorksheet(&quot;Teams&quot;, {views:[{state:&quot;frozen&quot;,ySplit:1}]});
-    ws.columns=[{header:&quot;Team Alias&quot;,width:12},{header:&quot;Team Name&quot;,width:26},{header:&quot;Headcount&quot;,width:12},{header:&quot;Exempt %&quot;,width:11},{header:&quot;Min Days&quot;,width:10}];
+    ws.columns=[{header:&quot;Team Alias&quot;,width:12},{header:&quot;Team Name&quot;,width:26},{header:&quot;Headcount&quot;,width:12},{header:&quot;Exempt %&quot;,width:11},{header:&quot;Min Days&quot;,width:10},{header:&quot;Min Days Priority&quot;,width:16}];
     xlHdr(ws.getRow(1));
     xlNote(ws.getCell(&quot;A1&quot;),&quot;Optional short code (A, B, C…). Used only as a label — the app regenerates codes on import.&quot;);
     xlNote(ws.getCell(&quot;B1&quot;),&quot;REQUIRED. The team's display name. Synergy rows and the Matrix Input sheet reference teams by this exact name.&quot;);
     xlNote(ws.getCell(&quot;C1&quot;),&quot;Total people on the team, before exemptions.&quot;);
     xlNote(ws.getCell(&quot;D1&quot;),&quot;Share of the team never expected in office (field staff, full-remote hires). The solver schedules EFFECTIVE headcount = Headcount x (100% - Exempt%). Higher exempt % = less seat pressure.&quot;);
-    xlNote(ws.getCell(&quot;E1&quot;),&quot;Minimum office days per week this team is required to have (0-5). The solver starts every team at exactly this floor and only adds days when a Must rule cannot otherwise be satisfied.&quot;);
+    xlNote(ws.getCell(&quot;E1&quot;),&quot;Minimum office days per week this team asks for (0-5). Whether this is guaranteed or just a target depends on the Min Days Priority column.&quot;);
+    xlNote(ws.getCell(&quot;F1&quot;),&quot;Must = this floor can never be missed, the solver is structurally incapable of generating fewer days. Should (default) = a real target the solver tries to hit and rarely misses, but CAN trade away if something else scores better — a miss costs 90 points/day, same rate as a missed Should synergy rule.&quot;);
     const data = fromState &amp;&amp; state.teams.length
-      ? state.teams.map((t,i)=>[teamCode(i), t.name, +t.headcount||0, +t.exempt||0, +t.minDays||0])
-      : [[&quot;A&quot;,&quot;Tech&quot;,80,5,0],[&quot;B&quot;,&quot;Product&quot;,35,5,0]];
+      ? state.teams.map((t,i)=>[teamCode(i), t.name, +t.headcount||0, +t.exempt||0, +t.minDays||0, (t.minDaysPriority===&quot;must&quot;?&quot;Must&quot;:&quot;Should&quot;)])
+      : [[&quot;A&quot;,&quot;Tech&quot;,80,5,0,&quot;Should&quot;],[&quot;B&quot;,&quot;Product&quot;,35,5,0,&quot;Should&quot;]];
     data.forEach((r,i)=>{
       const row=ws.addRow(r); row.height=16;
       row.eachCell(c=>{ c.border=XL.BD; c.fill = i%2 ? XL.ALT : XL.INPUT; c.alignment={vertical:&quot;middle&quot;}; });
     });
     // pad empty input rows to 40
     for(let i=data.length;i<40;i++){
-      const row=ws.addRow([&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;]); row.height=16;
+      const row=ws.addRow([&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;Should&quot;]); row.height=16;
       row.eachCell(c=>{ c.border=XL.BD; c.fill=XL.INPUT; });
     }
     xlRangeValidation(ws,&quot;C&quot;,2,41,1,100000,&quot;Headcount&quot;);
     xlRangeValidation(ws,&quot;D&quot;,2,41,0,100,&quot;Exempt %&quot;);
     xlRangeValidation(ws,&quot;E&quot;,2,41,0,5,&quot;Min Days&quot;);
+    xlListValidation(ws, &quot;F&quot;, 2, 41, [&quot;Should&quot;,&quot;Must&quot;]);
     return ws;
   }
 
@@ -4233,7 +4367,8 @@ self.onmessage = function(ev){
       const display = name || alias;
       teamNameToIndex[display] = state.teams.length;
       if(alias) teamNameToIndex[alias] = state.teams.length;
-      state.teams.push({name:display, headcount:+getField(r, [&quot;Headcount&quot;])||0, exempt:+getField(r, [&quot;Exempt %&quot;])||0, minDays:+getField(r, [&quot;Min Days&quot;])||0});
+      const mdPriRaw = String(getField(r, [&quot;Min Days Priority&quot;]) || &quot;Should&quot;).trim().toLowerCase();
+      state.teams.push({name:display, headcount:+getField(r, [&quot;Headcount&quot;])||0, exempt:+getField(r, [&quot;Exempt %&quot;])||0, minDays:+getField(r, [&quot;Min Days&quot;])||0, minDaysPriority: mdPriRaw===&quot;must&quot; ? &quot;must&quot; : &quot;should&quot;});
     });
     if(!state.teams.length){
       showImportSummary({scenario:$(&quot;scenarioName&quot;).value||&quot;-&quot;,teams:0,synergy:0,issues:[&quot;Teams sheet was found, but no team rows could be parsed. Keep the template headers unchanged.&quot;]});
@@ -5213,7 +5348,7 @@ self.onmessage = function(ev){
     if(parsed.scenario) $(&quot;scenarioName&quot;).value = String(parsed.scenario).slice(0,120);
     if(parsed.seats &amp;&amp; +parsed.seats>0) $(&quot;seats&quot;).value = Math.round(+parsed.seats);
     parsed.teams.slice(0,40).forEach(t=>{
-      state.teams.push({name:String(t.name||&quot;Team&quot;).slice(0,60), headcount:Math.max(1,Math.round(+t.headcount||10)), exempt:Math.min(100,Math.max(0,Math.round(t.exempt!=null?+t.exempt:5))), minDays:Math.min(5,Math.max(0,Math.round(+t.minDays||0)))});
+      state.teams.push({name:String(t.name||&quot;Team&quot;).slice(0,60), headcount:Math.max(1,Math.round(+t.headcount||10)), exempt:Math.min(100,Math.max(0,Math.round(t.exempt!=null?+t.exempt:5))), minDays:Math.min(5,Math.max(0,Math.round(+t.minDays||0))), minDaysPriority:&quot;should&quot;});
     });
     syncRulesAfterTeamChange();
     const nameIdx = {}; state.teams.forEach((t,i)=> nameIdx[t.name.toLowerCase()] = i);
