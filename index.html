@@ -611,7 +611,7 @@ code{
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><path d="M3 14h7v7H3z" rx="1"/><path d="M17 14v3M17 20v1M14 17h3M20 17h1"/></svg>
     </div>
     <span class="nav-wordmark">HYBRID·SCHEDULER</span>
-    <span class="nav-version">v2.11</span>
+    <span class="nav-version">v2.12</span>
   </a>
   <div class="nav-tabs">
     <button class="nav-tab active" data-tab="doc" onclick="switchTab('doc')">DOCUMENTATION</button>
@@ -1202,6 +1202,11 @@ code{
           <p>Any modal showing a genuine AI response — Explain, Compare, Draft Communications — now carries a persistent line: <em>"AI-generated — it can be confidently wrong, miss context, or misstate a number. Treat this as a first draft and double-check anything you're about to act on."</em> It doesn't appear on the (i) info-button explanations elsewhere in the app, since those are static, human-written text, not AI output — the note is reserved for content that actually came from a model.</p>
         </div>
 
+        <div class="callout success">
+          <div class="callout-title">RESPONSES NO LONGER FAIL SILENTLY — FIXED IN v2.12</div>
+          <p>Two real reliability gaps existed underneath every AI feature. First: nothing checked whether a response had actually finished or been cut off mid-sentence by hitting its token limit — a truncated answer just displayed as if it were complete. Second: if a provider returned genuinely empty content (a safety block, a dropped stream, an unusual response shape), the app rendered a blank modal with no explanation at all. Both are fixed now: a cut-off response triggers one automatic retry with more room before you ever see it, and only gets a visible "cut short" note if it's still incomplete after that; a truly empty response now throws a clear, specific error instead of silently rendering nothing.</p>
+        </div>
+
         <h3>The AI Data Entry loop, in detail</h3>
         <p>This is the deepest AI feature, so it's worth walking through: <strong>Capture</strong> — talk (a mic button using your browser's built-in speech recognition, no API key needed), type, or upload a recorded audio file, all landing in one editable transcript box. <strong>Analyze</strong> — one AI call extracts a structured preview (scenario, seats, teams, synergy rules) and lists up to 5 genuinely missing items as follow-up questions. <strong>Refine</strong> — answer the questions by editing the transcript or dictating more, then Re-Analyze; repeat as needed. <strong>Apply</strong> — once complete, one click populates the app with the usual overwrite confirmation and source badge.</p>
 
@@ -1339,6 +1344,11 @@ code{
               <td>Flat tabular output matching the selected tab.</td>
             </tr>
             <tr>
+              <td>PDF — Per-Tab Export</td>
+              <td>A quick capture of exactly what's on screen right now — one tab, one page (or a few, for a very tall calendar).</td>
+              <td>The small PDF button under each results tab (Insights, Intelligence, Work Calendar). Captures that tab as-is, scaled to always fill the printed page's full width — never squeezed illegibly thin, never cut off sideways.</td>
+            </tr>
+            <tr>
               <td>PDF — Executive Brief</td>
               <td>A one-page leadership handoff — the thing you actually print or attach to an email, not a data dump.</td>
               <td>KPI strip, Trust Score composition, a real vector utilization chart, a one-line synergy summary, a team snapshot, and 3-5 recommendations computed from this specific run — not template text. A second page comparing <strong>every distinct solution the solver found</strong> is appended automatically when AI Assistance is connected.</td>
@@ -1354,6 +1364,11 @@ code{
         <div class="callout">
           <div class="callout-title">THE AI PAGE COVERS ALL OPTIONS — UPDATED IN v2.11</div>
           <p>It used to write about whichever single solution you had selected when you clicked export. It now compares <strong>every structurally distinct solution the solver found</strong> — the same options, character, and trade-offs the in-app Compare Solutions feature covers — so the AI page is a genuine leadership comparison document, not a narrative about one arbitrary pick. If the solver only found one distinct solution, it falls back to a single-solution explanation instead of comparing an option against nothing.</p>
+        </div>
+
+        <div class="callout success">
+          <div class="callout-title">PER-TAB PDF EXPORT — COLUMNS NO LONGER GET CUT OFF, FIXED IN v2.12</div>
+          <p>The per-tab PDF button used to leave page-fitting to a generic screenshot-pagination library, which is exactly what was producing a wide Work Calendar split confusingly across multiple pages instead of scaled to fit. It's rebuilt now with the same philosophy as the Executive Brief: full manual control over the scaling math instead of trusting a library's heuristics. Every export scales to the printed page's full width first — so columns can never be cut off sideways — and automatically switches to landscape when the content is genuinely wider than tall. If a tab is still too long to fit one page at that width (a calendar with a lot of teams), it tiles straight down the page across as many pages as needed, always at full width, never sideways. Verified against a real 25-team calendar: every column stayed intact on both resulting pages.</p>
         </div>
 
         <h3>The Excel round-trip — rebuilt in v2</h3>
@@ -4566,21 +4581,49 @@ self.onmessage = function(ev){
       var a=document.createElement('a'); a.href=c.toDataURL('image/jpeg',0.92); a.download=tid+'-'+Date.now()+'.jpg'; a.click();
     }).catch(function(e){if(hidden) el.style.display=''; alert('JPEG export error: '+e.message);});
   };
-  window.tabExportPDF=function(tid){
-    var el=document.querySelector('[data-panel=&quot;'+tid+'&quot;]');
-    if(!el){alert('Tab not found.');return;}
-    if(typeof html2pdf==='undefined'){alert('html2pdf library not loaded.');return;}
-    var hidden=getComputedStyle(el).display==='none';
+  // v2.12: the old html2pdf.js wrapper left page-fitting to its own pagination heuristics,
+  // which is exactly what was producing columns split across pages instead of scaled to fit.
+  // Dropping to html2canvas + jsPDF directly gives full control: the image is ALWAYS scaled
+  // to the page's full width first (so columns can never be cut off sideways), landscape is
+  // picked automatically for wide content like the calendar, and if the result is still
+  // taller than one page, it tiles straight DOWN the page -- never sideways.
+  window.tabExportPDF = async function(tid){
+    var el = document.querySelector('[data-panel=&quot;'+tid+'&quot;]');
+    if(!el){ alert('Tab not found.'); return; }
+    if(typeof html2canvas==='undefined' || !window.jspdf){ alert('PDF engines not loaded.'); return; }
+    var hidden = getComputedStyle(el).display==='none';
     if(hidden) el.style.display='block';
-    var restore=function(){if(hidden) el.style.display='';};
-    html2pdf().set({
-      margin:[12,10,12,10],
-      filename:tid+'-'+Date.now()+'.pdf',
-      image:{type:'jpeg',quality:0.95},
-      html2canvas:{scale:1.5,backgroundColor:'#ffffff',logging:false,useCORS:true,allowTaint:true,scrollX:0,scrollY:0},
-      jsPDF:{orientation:'portrait',unit:'mm',format:'a4'},
-      pagebreak:{mode:'avoid-all',before:'.result-block'}
-    }).from(el).save().then(restore).catch(function(e){restore();alert('PDF error: '+e.message);});
+    try{
+      const canvas = await html2canvas(el, {scale:2, backgroundColor:'#ffffff', useCORS:true, allowTaint:true, scrollX:0, scrollY:0, logging:false});
+      const { jsPDF } = window.jspdf;
+      const isWide = canvas.width > canvas.height*1.15; // calendars/wide tables -> landscape automatically
+      const doc = new jsPDF({orientation: isWide?'landscape':'portrait', unit:'mm', format:'a4'});
+      const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+      const margin = 8;
+      const imgWmm = pageW - margin*2;
+      const imgHmm = canvas.height * imgWmm / canvas.width; // fit width FIRST, always -- this is the actual fix
+      const usableH = pageH - margin*2;
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      if(imgHmm <= usableH){
+        doc.addImage(dataUrl, 'JPEG', margin, margin, imgWmm, imgHmm);
+      } else {
+        // taller than one page at this width -- tile vertically, each page still full width
+        const pxPerMM = canvas.width / imgWmm;
+        const pagePx = usableH * pxPerMM;
+        let sy = 0, pageNum = 0;
+        while(sy < canvas.height){
+          const sliceH = Math.min(pagePx, canvas.height - sy);
+          const slice = document.createElement('canvas');
+          slice.width = canvas.width; slice.height = sliceH;
+          slice.getContext('2d').drawImage(canvas, 0, sy, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+          if(pageNum>0) doc.addPage();
+          doc.addImage(slice.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, imgWmm, sliceH/pxPerMM);
+          sy += sliceH; pageNum++;
+        }
+      }
+      doc.save(tid+'_'+fileStamp()+'.pdf');
+    }catch(e){ alert('PDF error: '+e.message); console.error(e); }
+    finally{ if(hidden) el.style.display=''; }
   };
 
   function addSynergyMatrixSheet(wb){
@@ -5194,7 +5237,11 @@ self.onmessage = function(ev){
   function lengthInstruction(plan, sectionCount){
     return 'LENGTH — a natural guide, not a rule: roughly '+plan.minWords+'-'+plan.maxWords+' words fits this scenario\'s complexity, but let the actual content decide, not a target. Write shorter if there is genuinely little to say under a heading; write longer if there is real nuance worth covering. Don\'t pad with repetition just to hit a number, and don\'t skip a heading entirely — a couple of honest sentences under each of the '+sectionCount+' headings beats an artificially inflated one. Ground statements in the actual numbers, days, team names, and scores below rather than generic filler.';
   }
-  async function aiCall(prompt, maxTokens){
+  // v2.12: &quot;not reliable&quot; bug -- responses could come back silently blank (API succeeded but
+  // returned no usable content, e.g. a safety block or an unexpected shape) or silently
+  // clipped mid-sentence (hit max_tokens with no indication). Neither was ever surfaced --
+  // the modal just showed whatever came back, incomplete or empty, as if it were final.
+  async function aiCallRaw(prompt, maxTokens){
     const {provider, key, model} = state.ai;
     if(!key || !model) throw new Error(&quot;AI is not configured. Open the AI Assistant panel and connect a key.&quot;);
     if(provider===&quot;anthropic&quot;){
@@ -5205,7 +5252,8 @@ self.onmessage = function(ev){
       });
       const data = await res.json();
       if(!res.ok) throw new Error((data.error&amp;&amp;data.error.message)||(&quot;HTTP &quot;+res.status));
-      return (data.content||[]).filter(c=>c.type===&quot;text&quot;).map(c=>c.text).join(&quot;\n&quot;);
+      const text = (data.content||[]).filter(c=>c.type===&quot;text&quot;).map(c=>c.text).join(&quot;\n&quot;);
+      return {text, truncated: data.stop_reason===&quot;max_tokens&quot;};
     }
     if(provider===&quot;gemini&quot;){
       const res = await fetch(&quot;https://generativelanguage.googleapis.com/v1beta/models/&quot;+encodeURIComponent(model)+&quot;:generateContent?key=&quot;+encodeURIComponent(key), {
@@ -5214,8 +5262,12 @@ self.onmessage = function(ev){
       });
       const data = await res.json();
       if(!res.ok) throw new Error((data.error&amp;&amp;data.error.message)||(&quot;HTTP &quot;+res.status));
+      if(data.promptFeedback &amp;&amp; data.promptFeedback.blockReason) throw new Error(&quot;Gemini blocked this request (&quot;+data.promptFeedback.blockReason+&quot;). Try rephrasing or switch provider.&quot;);
       const cand = data.candidates &amp;&amp; data.candidates[0];
-      return cand &amp;&amp; cand.content &amp;&amp; cand.content.parts ? cand.content.parts.map(p=>p.text||&quot;&quot;).join(&quot;&quot;) : &quot;&quot;;
+      const text = cand &amp;&amp; cand.content &amp;&amp; cand.content.parts ? cand.content.parts.map(p=>p.text||&quot;&quot;).join(&quot;&quot;) : &quot;&quot;;
+      const finish = cand &amp;&amp; cand.finishReason;
+      if(finish &amp;&amp; finish!==&quot;STOP&quot; &amp;&amp; finish!==&quot;MAX_TOKENS&quot;) throw new Error(&quot;Gemini stopped early (&quot;+finish+&quot;) and returned no usable text. Try again or switch provider.&quot;);
+      return {text, truncated: finish===&quot;MAX_TOKENS&quot;};
     }
     if(provider===&quot;grok&quot;){
       const res = await fetch(&quot;https://api.x.ai/v1/chat/completions&quot;, {
@@ -5224,9 +5276,29 @@ self.onmessage = function(ev){
       });
       const data = await res.json();
       if(!res.ok) throw new Error((data.error&amp;&amp;data.error.message)||(&quot;HTTP &quot;+res.status));
-      return data.choices &amp;&amp; data.choices[0] ? (data.choices[0].message.content||&quot;&quot;) : &quot;&quot;;
+      const choice = data.choices &amp;&amp; data.choices[0];
+      const text = choice ? (choice.message.content||&quot;&quot;) : &quot;&quot;;
+      return {text, truncated: choice &amp;&amp; choice.finish_reason===&quot;length&quot;};
     }
     throw new Error(&quot;Unknown provider&quot;);
+  }
+  // The reliable wrapper every feature actually calls: retries once with more room if the
+  // first attempt got cut off, and refuses to hand back an empty response silently -- an
+  // empty result now throws a clear, explained error instead of rendering as blank.
+  async function aiCall(prompt, maxTokens){
+    let {text, truncated} = await aiCallRaw(prompt, maxTokens);
+    if(truncated &amp;&amp; text.trim().length>0){
+      const retryBudget = Math.min(8000, Math.round((maxTokens||1500)*1.6));
+      try{
+        const retry = await aiCallRaw(prompt, retryBudget);
+        if(retry.text.trim().length > text.trim().length){ text = retry.text; truncated = retry.truncated; }
+      }catch(e){ /* keep the first attempt if the retry itself fails */ }
+    }
+    if(!text || !text.trim()){
+      throw new Error(&quot;The model returned an empty response. This can happen if the request was blocked, the connection dropped mid-stream, or the model simply produced nothing usable. Try again, or switch provider/model if it keeps happening.&quot;);
+    }
+    if(truncated) text = text.trim() + &quot;\n\n[Note: this response was cut short by the model's length limit, even after one retry with more room. The content above is real but incomplete -- ask again if you need the rest.]&quot;;
+    return text;
   }
   function openAIModal(title, body){
     $(&quot;aiModalTitle&quot;).innerHTML = title;
